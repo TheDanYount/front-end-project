@@ -17,6 +17,7 @@ const $celeCanvas = document.querySelector('#celebration-canvas');
 const $holidayName = document.querySelector('#holiday-name');
 const $holidayDesc = document.querySelector('#holiday-desc');
 const $textSection = document.querySelector('#text-section');
+const $noCelebration = document.querySelector('#no-celebration');
 /*
 interface Holiday {
   name: string;
@@ -288,7 +289,9 @@ async function createCalendarScene() {
     }
     await initialCameraMovement(calCamera, calRenderer, calScene);
     await getHoliday();
-    if (holidayFound === true) {
+    if (!$noCelebration) throw new Error('$noCelebration not found!');
+    if (holidayFound) {
+      $noCelebration.classList.add('hidden');
       const celeGltf = await loadGLTF(
         '../../objects/celebrations/family-celebration.glb',
       );
@@ -297,7 +300,7 @@ async function createCalendarScene() {
       celeCamera.lookAt(0, 7, 0);
       celeRenderer.render(celeScene, celeCamera);
     } else {
-      // other stuff
+      $noCelebration.classList.remove('hidden');
     }
   } catch (error) {
     console.error('Error:', error);
