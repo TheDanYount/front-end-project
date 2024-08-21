@@ -147,6 +147,38 @@ async function animate(
   });
 }
 
+async function initialCameraMovement(
+  camera: UpdatedPerspectiveCamera,
+  renderer: WebGLRenderer,
+  scene: Scene,
+): Promise<boolean> {
+  return new Promise((resolve) => {
+    const startTime = Date.now();
+    let count = 1;
+    function nextFrame(): void {
+      setTimeout(
+        () => {
+          if (count <= 40) {
+            camera.position.set(
+              15 + 3.5 * Math.sin((count * Math.PI) / 40) - count / 20,
+              15 - count / 10,
+              7 - 3.5 * (1 - Math.cos((count * Math.PI) / 40)),
+            );
+            camera.lookAt(0, 6, 0);
+            renderer.render(scene, camera);
+            count++;
+            nextFrame();
+          } else {
+            resolve(true);
+          }
+        },
+        50 * count - (Date.now() - startTime),
+      );
+    }
+    nextFrame();
+  });
+}
+
 async function createCalendarScene(): Promise<void> {
   const calRenderer = new THREE.WebGLRenderer({
     antialias: true,
@@ -203,6 +235,7 @@ async function createCalendarScene(): Promise<void> {
       calCamera,
       action.getClip().duration,
     );
+    await initialCameraMovement(calCamera, calRenderer, calScene);
   } catch (error) {
     console.error('Error:', error);
   }

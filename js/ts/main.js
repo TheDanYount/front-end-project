@@ -1,24 +1,24 @@
 import * as THREE from '../js/three.module.js';
 import { TextureLoader } from '../js/three.module.js';
 import { GLTFLoader } from '../js/GLTFLoader.js';
-const initialDelayBeforeCalendarPageFlip = 1000; //in ms
+const initialDelayBeforeCalendarPageFlip = 1000; // in ms
 const breakpointForLarge = 1024;
-let currentDate = new Date();
-let currentMonth = currentDate.getMonth(); //this is 0-indexed!
-let currentDay = currentDate.getDate();
-let previousDate = new Date();
+const currentDate = new Date();
+const currentMonth = currentDate.getMonth(); // this is 0-indexed!
+const currentDay = currentDate.getDate();
+const previousDate = new Date();
 previousDate.setDate(previousDate.getDate() - 1);
-let previousMonth = previousDate.getMonth(); //this is 0-indexed!
-let previousDay = previousDate.getDate();
+const previousMonth = previousDate.getMonth(); // this is 0-indexed!
+const previousDay = previousDate.getDate();
 const $calCanvas = document.querySelector('#calendar-canvas');
-//Not used... YET
-//const $celeCanvas = document.querySelector('#celebration-canvas'); //short for celebrationCanvas
-//Not used... YET
-//const $holidayTitle = document.querySelector('#holiday-title');
-//Not used... YET
-//const $holidayDesc = document.querySelector('#holiday-desc');
+// Not used... YET
+// const $celeCanvas = document.querySelector('#celebration-canvas'); //short for celebrationCanvas
+// Not used... YET
+// const $holidayTitle = document.querySelector('#holiday-title');
+// Not used... YET
+// const $holidayDesc = document.querySelector('#holiday-desc');
 const $textSection = document.querySelector('#text-section');
-//shortened from updateRendererSizeRelativeToScreenSize
+// shortened from updateRendererSizeRelativeToScreenSize
 function updateRendererSizeRSS(renderer) {
   const innerW = window.innerWidth;
   const innerH = window.innerHeight;
@@ -68,8 +68,8 @@ async function loadTexture(url) {
     );
   });
 }
-//Note that the following function IS NOT generic. It requires finding the
-//specific paths to the textures that needs to be updated.
+// Note that the following function IS NOT generic. It requires finding the
+// specific paths to the textures that needs to be updated.
 function updateTextures(textureArray, gltf) {
   textureArray[0].flipY = false;
   textureArray[1].flipY = false;
@@ -105,6 +105,33 @@ async function animate(mixer, action, renderer, scene, camera, duration) {
     requestAnimationFrame(nextFrame);
   });
 }
+async function initialCameraMovement(camera, renderer, scene) {
+  return new Promise((resolve) => {
+    const startTime = Date.now();
+    let count = 1;
+    function nextFrame() {
+      setTimeout(
+        () => {
+          if (count <= 40) {
+            camera.position.set(
+              15 + 3.5 * Math.sin((count * Math.PI) / 40) - count / 20,
+              15 - count / 10,
+              7 - 3.5 * (1 - Math.cos((count * Math.PI) / 40)),
+            );
+            camera.lookAt(0, 6, 0);
+            renderer.render(scene, camera);
+            count++;
+            nextFrame();
+          } else {
+            resolve(true);
+          }
+        },
+        50 * count - (Date.now() - startTime),
+      );
+    }
+    nextFrame();
+  });
+}
 async function createCalendarScene() {
   const calRenderer = new THREE.WebGLRenderer({
     antialias: true,
@@ -112,7 +139,7 @@ async function createCalendarScene() {
   });
   updateRendererSizeRSS(calRenderer);
   updateHTMLElementSizes();
-  //The four arguments below are field of view, aspect, near, and far, respectively
+  // The four arguments below are field of view, aspect, near, and far, respectively
   const calCamera = new THREE.PerspectiveCamera(75, 1, 0.1, 50);
   calCamera.position.set(15, 15, 7);
   const calScene = new THREE.Scene();
@@ -153,6 +180,7 @@ async function createCalendarScene() {
       calCamera,
       action.getClip().duration,
     );
+    await initialCameraMovement(calCamera, calRenderer, calScene);
   } catch (error) {
     console.error('Error:', error);
   }
