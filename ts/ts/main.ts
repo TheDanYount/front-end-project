@@ -12,11 +12,11 @@ const breakpointForLarge = 1024;
 
 const currentDate = new Date();
 // const currentYear = currentDate.getFullYear();
-const currentMonth = currentDate.getMonth(); // this is 0-indexed!
+const currentMonth = currentDate.getMonth(); // this is 0-indexed
 const currentDay = currentDate.getDate();
 const previousDate = new Date();
 previousDate.setDate(previousDate.getDate() - 1);
-const previousMonth = previousDate.getMonth(); // this is 0-indexed!
+const previousMonth = previousDate.getMonth(); // this is 0-indexed
 const previousDay = previousDate.getDate();
 let holidayFound = false;
 
