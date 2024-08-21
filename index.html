@@ -1,20 +1,51 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AJAX Project</title>
-  <link rel="icon" href="images/favicon.ico">
-  <link rel="stylesheet" href="css/reset.css">
-  <link rel="stylesheet" href="css/layout.css">
-  <link rel="stylesheet" href="css/styles.css">
-</head>
-<body>
-  <header>
-  </header>
-  <main>
-  </main>
-  <script src="js/data.js"></script>
-  <script src="js/main.js"></script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AJAX Project</title>
+    <link rel="icon" href="images/favicon.ico" />
+    <link rel="stylesheet" href="css/reset.css" />
+    <link rel="stylesheet" href="css/layout.css" />
+    <link rel="stylesheet" href="css/styles.css" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Caveat:wght@400..700&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap"
+      rel="stylesheet" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Calligraffitti&family=Caveat:wght@400..700&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap"
+      rel="stylesheet" />
+  </head>
+  <body class="bg-[#eeeeee] font-[Caveat] text-slate-800">
+    <canvas id="calendar-canvas" class="fixed"></canvas>
+    <canvas id="celebration-canvas" class="mx-auto"></canvas>
+    <div
+      class="absolute inset-y-[38vw] lg:inset-y-[33vh] inset-x-[5vh] flex justify-center items-start lg:items-center">
+      <p
+        id="no-celebration"
+        class="hidden text-4xl lg:text-8xl text-center max-w-[1060px]">
+        All partied out today! Try a new date to see what you can look forward
+        to!
+      </p>
+
+      <div></div>
+    </div>
+    <main>
+      <div id="text-section" class="bg-white">
+        <div class="relative max-w-[800px] mx-auto py-4">
+          <h1
+            id="holiday-name"
+            class="mb-4 text-center px-10 font-bold text-3xl lg:text-6xl font-[Calligraffitti]"></h1>
+          <p id="holiday-desc" class="text-xl lg:text-4xl"></p>
+        </div>
+      </div>
+    </main>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="js/ts/data.js"></script>
+    <script src="js/ts/main.js" type="module"></script>
+  </body>
 </html>
