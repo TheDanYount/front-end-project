@@ -185,6 +185,12 @@ async function createCalendarScene(): Promise<void> {
     canvas: $calCanvas,
   }) as WebGLRenderer;
   updateRendererSizeRSS(calRenderer);
+  if (!$calCanvas) throw new Error('$calCanvas not found!');
+  if (!(window.innerWidth < breakpointForLarge)) {
+    $calCanvas.classList.add(
+      `left-[${window.innerWidth / 2 - window.innerHeight / 3}px]`,
+    );
+  }
   updateHTMLElementSizes();
   // The four arguments below are field of view, aspect, near, and far, respectively
   const calCamera = new THREE.PerspectiveCamera(
@@ -235,6 +241,27 @@ async function createCalendarScene(): Promise<void> {
       calCamera,
       action.getClip().duration,
     );
+    if (window.innerWidth < breakpointForLarge) {
+      $calCanvas.classList.add(
+        'transition-transform',
+        'duration-[2000ms]',
+        'ease-in-out',
+        '0s',
+        'scale-[calc(33.33%)]',
+        'translate-x-[calc(-33.33%)]',
+        'translate-y-[calc(-33.33%)]',
+      );
+    } else {
+      $calCanvas.classList.add(
+        'transition-transform',
+        'duration-[2000ms]',
+        'ease-in-out',
+        '0s',
+        'scale-[calc(33.33%)]',
+        `translate-x-[-${window.innerWidth / 2 - window.innerHeight / 9}px]`,
+        `translate-y-[-${(window.innerHeight * 2) / 9}px]`,
+      );
+    }
     await initialCameraMovement(calCamera, calRenderer, calScene);
   } catch (error) {
     console.error('Error:', error);
