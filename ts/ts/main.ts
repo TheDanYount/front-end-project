@@ -1,36 +1,37 @@
 import * as THREE from '../js/three.module.js';
-import { TextureLoader } from '../js/three.module.js';
-import { Object3D } from '../js/three.module.js';
-import { Scene } from '../js/three.module.js';
-import { PerspectiveCamera } from '../js/three.module.js';
-import { WebGLRenderer } from '../js/three.module.js';
-import { Vector3 } from '../js/three.module.js';
-import { DirectionalLight } from '../js/three.module.js';
+import {
+  TextureLoader,
+  Scene,
+  WebGLRenderer,
+  Vector3,
+} from '../js/three.module.js';
 import { GLTFLoader } from '../js/GLTFLoader.js';
 
+const initialDelayBeforeCalendarPageFlip = 1000; // in ms
 const breakpointForLarge = 1024;
 
-let currentDate = new Date();
-let currentMonth = currentDate.getMonth(); //this is 0-indexed!
-let currentDay = currentDate.getDate();
-let previousDate = new Date();
+const currentDate = new Date();
+const currentMonth = currentDate.getMonth(); // this is 0-indexed!
+const currentDay = currentDate.getDate();
+const previousDate = new Date();
 previousDate.setDate(previousDate.getDate() - 1);
-let previousMonth = previousDate.getMonth(); //this is 0-indexed!
-let previousDay = previousDate.getDate();
-let currentTitle = '';
-let currentDesc = '';
+const previousMonth = previousDate.getMonth(); // this is 0-indexed!
+const previousDay = previousDate.getDate();
 
 const $calCanvas = document.querySelector('#calendar-canvas');
-const $celeCanvas = document.querySelector('#celebration-canvas'); //short for celebrationCanvas
-const $holidayTitle = document.querySelector('#holiday-title');
-const $holidayDesc = document.querySelector('#holiday-desc');
+// Not used... YET
+// const $celeCanvas = document.querySelector('#celebration-canvas'); //short for celebrationCanvas
+// Not used... YET
+// const $holidayTitle = document.querySelector('#holiday-title');
+// Not used... YET
+// const $holidayDesc = document.querySelector('#holiday-desc');
 const $textSection = document.querySelector('#text-section');
 
-interface UpdatedPerspectiveCamera extends PerspectiveCamera {
+interface UpdatedPerspectiveCamera extends THREE.PerspectiveCamera {
   position: Vector3;
 }
 
-interface UpdatedDirectionalLight extends DirectionalLight {
+interface UpdatedDirectionalLight extends THREE.DirectionalLight {
   position: Vector3;
   decay: number;
 }
@@ -45,7 +46,7 @@ interface GLTF {
   textures: THREE.Texture[];
 }
 
-//shortened from updateRendererSizeRelativeToScreenSize
+// shortened from updateRendererSizeRelativeToScreenSize
 function updateRendererSizeRSS(renderer: WebGLRenderer): void {
   const innerW = window.innerWidth;
   const innerH = window.innerHeight;
@@ -99,8 +100,8 @@ async function loadTexture(url: string): Promise<THREE.Texture> {
   });
 }
 
-//Note that the following function IS NOT generic. It requires finding the
-//specific paths to the textures that needs to be updated.
+// Note that the following function IS NOT generic. It requires finding the
+// specific paths to the textures that needs to be updated.
 function updateTextures(textureArray: THREE.Texture[], gltf: GLTF): void {
   textureArray[0].flipY = false;
   textureArray[1].flipY = false;
@@ -116,6 +117,36 @@ function updateTextures(textureArray: THREE.Texture[], gltf: GLTF): void {
   gltf.scene.children[2].children[1].material.needsUpdate = true;
 }
 
+async function delay(time: number): Promise<boolean> {
+  return new Promise((resolve) => {
+    setTimeout(() => resolve(true), time);
+  });
+}
+
+async function animate(
+  mixer: THREE.AnimationMixer,
+  action: THREE.AnimationAction,
+  renderer: WebGLRenderer,
+  scene: Scene,
+  camera: UpdatedPerspectiveCamera,
+  duration: number,
+): Promise<boolean> {
+  return new Promise((resolve) => {
+    function nextFrame(): void {
+      setTimeout(() => {
+        if (action.time < duration) {
+          requestAnimationFrame(nextFrame);
+          mixer.update(0.05);
+          renderer.render(scene, camera);
+        } else {
+          resolve(true);
+        }
+      }, 50);
+    }
+    requestAnimationFrame(nextFrame);
+  });
+}
+
 async function createCalendarScene(): Promise<void> {
   const calRenderer = new THREE.WebGLRenderer({
     antialias: true,
@@ -123,7 +154,7 @@ async function createCalendarScene(): Promise<void> {
   }) as WebGLRenderer;
   updateRendererSizeRSS(calRenderer);
   updateHTMLElementSizes();
-  //The four arguments below are field of view, aspect, near, and far, respectively
+  // The four arguments below are field of view, aspect, near, and far, respectively
   const calCamera = new THREE.PerspectiveCamera(
     75,
     1,
@@ -158,7 +189,20 @@ async function createCalendarScene(): Promise<void> {
     const model = gltf.scene;
     calScene.add(model);
     calCamera.lookAt(0, 6, 0);
+    const mixer = new THREE.AnimationMixer(model);
+    const action = mixer.clipAction(gltf.animations[0]).play();
+    action.clampWhenFinished = true;
+    action.setLoop(THREE.LoopOnce);
     calRenderer.render(calScene, calCamera);
+    await delay(initialDelayBeforeCalendarPageFlip);
+    await animate(
+      mixer,
+      action,
+      calRenderer,
+      calScene,
+      calCamera,
+      action.getClip().duration,
+    );
   } catch (error) {
     console.error('Error:', error);
   }
