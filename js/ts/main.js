@@ -4,7 +4,7 @@ import { GLTFLoader } from '../js/GLTFLoader.js';
 const initialDelayBeforeCalendarPageFlip = 1000; // in ms
 const breakpointForLarge = 1024;
 const currentDate = new Date();
-//const currentYear = currentDate.getFullYear();
+// const currentYear = currentDate.getFullYear();
 const currentMonth = currentDate.getMonth(); // this is 0-indexed!
 const currentDay = currentDate.getDate();
 const previousDate = new Date();
@@ -13,8 +13,7 @@ const previousMonth = previousDate.getMonth(); // this is 0-indexed!
 const previousDay = previousDate.getDate();
 let holidayFound = false;
 const $calCanvas = document.querySelector('#calendar-canvas');
-// Not used... YET
-// const $celeCanvas = document.querySelector('#celebration-canvas'); //short for celebrationCanvas
+const $celeCanvas = document.querySelector('#celebration-canvas');
 const $holidayName = document.querySelector('#holiday-name');
 const $holidayDesc = document.querySelector('#holiday-desc');
 const $textSection = document.querySelector('#text-section');
@@ -218,8 +217,21 @@ async function createCalendarScene() {
   calSceneLight.decay = 0;
   calSceneLight.position.set(10, 18, -20);
   calScene.add(calSceneLight);
+  const celeRenderer = new THREE.WebGLRenderer({
+    antialias: true,
+    canvas: $celeCanvas,
+  });
+  updateRendererSizeRSS(celeRenderer);
+  const celeCamera = new THREE.PerspectiveCamera(75, 1, 0.1, 50);
+  celeCamera.position.set(15, 9, 2);
+  const celeScene = new THREE.Scene();
+  celeScene.background = new THREE.Color(0xeeeeee);
+  const celeSceneLight = new THREE.DirectionalLight(0xfdf1bf, 5);
+  celeSceneLight.decay = 0;
+  celeSceneLight.position.set(10, 18, 0);
+  celeScene.add(celeSceneLight);
   try {
-    const gltf = await loadGLTF('../../objects/calendar.glb');
+    const calGltf = await loadGLTF('../../objects/calendar.glb');
     const newTexture1 = await loadTexture(
       `../../images/days/d${previousDay}.png`,
     );
@@ -232,12 +244,15 @@ async function createCalendarScene() {
     const newTexture4 = await loadTexture(
       `../../images/months/m${currentMonth + 1}.png`,
     );
-    updateTextures([newTexture1, newTexture2, newTexture3, newTexture4], gltf);
-    const model = gltf.scene;
-    calScene.add(model);
+    updateTextures(
+      [newTexture1, newTexture2, newTexture3, newTexture4],
+      calGltf,
+    );
+    const calModel = calGltf.scene;
+    calScene.add(calModel);
     calCamera.lookAt(0, 6, 0);
-    const mixer = new THREE.AnimationMixer(model);
-    const action = mixer.clipAction(gltf.animations[0]).play();
+    const mixer = new THREE.AnimationMixer(calModel);
+    const action = mixer.clipAction(calGltf.animations[0]).play();
     action.clampWhenFinished = true;
     action.setLoop(THREE.LoopOnce);
     calRenderer.render(calScene, calCamera);
@@ -274,9 +289,15 @@ async function createCalendarScene() {
     await initialCameraMovement(calCamera, calRenderer, calScene);
     await getHoliday();
     if (holidayFound === true) {
-      //stuff
+      const celeGltf = await loadGLTF(
+        '../../objects/celebrations/family-celebration.glb',
+      );
+      const celeModel = celeGltf.scene;
+      celeScene.add(celeModel);
+      celeCamera.lookAt(0, 7, 0);
+      celeRenderer.render(celeScene, celeCamera);
     } else {
-      //other stuff
+      // other stuff
     }
   } catch (error) {
     console.error('Error:', error);
