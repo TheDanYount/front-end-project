@@ -4,20 +4,34 @@ import { GLTFLoader } from '../js/GLTFLoader.js';
 const initialDelayBeforeCalendarPageFlip = 1000; // in ms
 const breakpointForLarge = 1024;
 const currentDate = new Date();
+//const currentYear = currentDate.getFullYear();
 const currentMonth = currentDate.getMonth(); // this is 0-indexed!
 const currentDay = currentDate.getDate();
 const previousDate = new Date();
 previousDate.setDate(previousDate.getDate() - 1);
 const previousMonth = previousDate.getMonth(); // this is 0-indexed!
 const previousDay = previousDate.getDate();
+let holidayFound = false;
 const $calCanvas = document.querySelector('#calendar-canvas');
 // Not used... YET
 // const $celeCanvas = document.querySelector('#celebration-canvas'); //short for celebrationCanvas
-// Not used... YET
-// const $holidayTitle = document.querySelector('#holiday-title');
-// Not used... YET
-// const $holidayDesc = document.querySelector('#holiday-desc');
+const $holidayName = document.querySelector('#holiday-name');
+const $holidayDesc = document.querySelector('#holiday-desc');
 const $textSection = document.querySelector('#text-section');
+/*
+interface Holiday {
+  name: string;
+  description: string;
+}
+
+interface HolidayResponseObject extends Object {
+  holidays: Holiday[];
+}
+
+interface HolidaysObject extends Promise<object> {
+  response: HolidayResponseObject;
+}
+*/
 // shortened from updateRendererSizeRelativeToScreenSize
 function updateRendererSizeRSS(renderer) {
   const innerW = window.innerWidth;
@@ -88,6 +102,56 @@ async function delay(time) {
   return new Promise((resolve) => {
     setTimeout(() => resolve(true), time);
   });
+}
+async function getHoliday() {
+  if (!$holidayName) throw new Error('$holidayName not found!');
+  if (!$holidayDesc) throw new Error('$holidayName not found!');
+  /*
+    const params = {
+      api_key: 'FoSOX7Tl9kyNyP4WRVBqwtHEj7zozDcR',
+      country: 'us',
+      year: currentYear,
+      month: currentMonth + 1,
+      day: currentDay,
+    };
+    */
+  try {
+    /*
+        const holidaysPromiseResponse = await fetch(
+          `https://calendarific.com/api/v2/holidays?api_key=${params.api_key}&country=${params.country}&year=${params.year}&month=${params.month}&day=${params.day}`,
+        );
+        if (!holidaysPromiseResponse.ok) {
+          holidayFound = false;
+          throw new Error(`HTTP error! Status: ${holidaysPromiseResponse.status}`);
+        }
+        const holidaysObject =
+          (await holidaysPromiseResponse.json()) as HolidaysObject;
+        console.log(holidaysObject);
+        const holidaysArray = holidaysObject.response.holidays;
+        console.log(holidaysArray);
+        if (holidaysArray.length > 0) {
+          const chosenHoliday =
+            holidaysArray[Math.floor(Math.random() * holidaysArray.length)];
+          if (chosenHoliday.name && chosenHoliday.description) {
+            $holidayName.textContent = chosenHoliday.name;
+            $holidayDesc.textContent = chosenHoliday.description;
+          }
+        }
+        */
+    $holidayName.textContent =
+      'International Day of Remembrance of and Tribute to the Victims of Terrorism';
+    $holidayDesc.textContent =
+      'International Day of Remembrance of and Tribute to the Victims of Terrorism is a United Nations observance in the USA';
+    holidayFound = true;
+    /*
+          else {
+            holidayFound = false;
+          }
+          */
+  } catch (error) {
+    holidayFound = false;
+    console.error('Error:', error);
+  }
 }
 async function animate(mixer, action, renderer, scene, camera, duration) {
   return new Promise((resolve) => {
@@ -208,6 +272,12 @@ async function createCalendarScene() {
       );
     }
     await initialCameraMovement(calCamera, calRenderer, calScene);
+    await getHoliday();
+    if (holidayFound === true) {
+      //stuff
+    } else {
+      //other stuff
+    }
   } catch (error) {
     console.error('Error:', error);
   }
