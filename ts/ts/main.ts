@@ -27,15 +27,18 @@ const $celeCanvas = document.querySelector('#celebration-canvas');
 const $sidebar = document.querySelector('#sidebar');
 const $holidayName = document.querySelector('#holiday-name');
 const $holidayDesc = document.querySelector('#holiday-desc');
+const $favorite = document.querySelector('#favorite');
 const $textSection = document.querySelector('#text-section');
 const $noCelebration = document.querySelector('#no-celebration');
 const $newButton = document.querySelector('#new');
+const $saveButton = document.querySelector('#save');
 const $dateInputDialog = document.querySelector(
   '#date-input-dialog',
 ) as HTMLDialogElement;
 const $dateInputForm = document.querySelector(
   '#date-input-form',
 ) as HTMLFormElement;
+const $savePopUp = document.querySelector('#save-pop-up') as HTMLElement;
 
 interface UpdatedPerspectiveCamera extends THREE.PerspectiveCamera {
   position: Vector3;
@@ -86,6 +89,7 @@ let calGltf: GLTF;
 function updateRendererSizeRSS(renderer: WebGLRenderer): void {
   const innerW = window.innerWidth;
   const innerH = window.innerHeight;
+  console.log('hi');
   if (innerW < breakpointForLarge) {
     renderer.setSize(innerW, innerW);
   } else {
@@ -159,7 +163,8 @@ async function delay(time: number): Promise<boolean> {
 
 async function getHoliday(): Promise<void> {
   if (!$holidayName) throw new Error('$holidayName not found!');
-  if (!$holidayDesc) throw new Error('$holidayName not found!');
+  if (!$holidayDesc) throw new Error('$holidayDesc not found!');
+  if (!$favorite) throw new Error('$favorite not found!');
 
   const params = {
     api_key: 'FoSOX7Tl9kyNyP4WRVBqwtHEj7zozDcR',
@@ -170,6 +175,7 @@ async function getHoliday(): Promise<void> {
   };
 
   try {
+    /*
     const holidaysPromiseResponse = await fetch(
       `https://calendarific.com/api/v2/holidays?api_key=${params.api_key}&country=${params.country}&year=${params.year}&month=${params.month}&day=${params.day}`,
     );
@@ -181,6 +187,7 @@ async function getHoliday(): Promise<void> {
       }
       celeRenderer.render(celeScene, celeCamera);
       $holidayName.textContent = '';
+    $favorite.classList.add('hidden');
       $holidayDesc.textContent = '';
       holidayFound = false;
       throw new Error(`HTTP error! Status: ${holidaysPromiseResponse.status}`);
@@ -194,6 +201,7 @@ async function getHoliday(): Promise<void> {
       if (chosenHoliday.name && chosenHoliday.description) {
         holidayFound = true;
         $holidayName.textContent = chosenHoliday.name;
+    $favorite.classList.remove('hidden');
         $holidayDesc.textContent = chosenHoliday.description;
       }
     } else {
@@ -204,9 +212,15 @@ async function getHoliday(): Promise<void> {
       }
       celeRenderer.render(celeScene, celeCamera);
       $holidayName.textContent = '';
+    $favorite.classList.add('hidden');
       $holidayDesc.textContent = '';
       holidayFound = false;
     }
+      */
+    holidayFound = true;
+    $holidayName.textContent = 'Blah';
+    $favorite.classList.remove('hidden');
+    $holidayDesc.textContent = 'blah blah blah';
   } catch (error) {
     for (const child of celeScene.children) {
       if (child.type === 'Group') {
@@ -215,6 +229,7 @@ async function getHoliday(): Promise<void> {
     }
     celeRenderer.render(celeScene, celeCamera);
     $holidayName.textContent = '';
+    $favorite.classList.add('hidden');
     $holidayDesc.textContent = '';
     holidayFound = false;
     console.error('Error:', error);
