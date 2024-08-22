@@ -29,7 +29,7 @@ const $celeCanvas = document.querySelector('#celebration-canvas');
 const $sidebar = document.querySelector('#sidebar');
 const $holidayName = document.querySelector('#holiday-name');
 const $holidayDesc = document.querySelector('#holiday-desc');
-const $favorite = document.querySelector('#favorite');
+const $favorite = document.querySelector('#favorite') as HTMLElement;
 const $textSection = document.querySelector('#text-section');
 const $noCelebration = document.querySelector('#no-celebration');
 const $newButton = document.querySelector('#new');
@@ -91,7 +91,6 @@ let calGltf: GLTF;
 function updateRendererSizeRSS(renderer: WebGLRenderer): void {
   const innerW = window.innerWidth;
   const innerH = window.innerHeight;
-  console.log('hi');
   if (innerW < breakpointForLarge) {
     renderer.setSize(innerW, innerW);
   } else {
@@ -516,5 +515,36 @@ async function handleDateSearch(event: Event): Promise<void> {
     } else {
       $noCelebration.classList.remove('hidden');
     }
+  }
+}
+
+if (!$saveButton) throw new Error('$saveButton not found!');
+$saveButton.addEventListener('click', saveDate);
+
+function saveDate() {
+  if (!$savePopUp) throw new Error('$savePopUp not found!');
+  $savePopUp.classList.add(
+    'transition-opacity',
+    'duration-500',
+    'ease-in-out',
+    'opacity-100',
+  );
+  setTimeout(() => $savePopUp.classList.remove('opacity-100'), 1000);
+}
+
+if (!$favorite) throw new Error('$favorite not found!');
+$favorite.addEventListener('click', favoriteDate);
+
+function favoriteDate() {
+  if (!$favorite) throw new Error('$favorite not found!');
+  if ($favorite.dataset.favorite === 'n') {
+    $favorite.dataset.favorite = 'y';
+    $favorite.classList.remove('fa-regular');
+    $favorite.classList.add('fa-solid');
+    saveDate();
+  } else {
+    $favorite.dataset.favorite = 'n';
+    $favorite.classList.remove('fa-solid');
+    $favorite.classList.add('fa-regular');
   }
 }
