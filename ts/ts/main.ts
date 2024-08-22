@@ -520,16 +520,14 @@ if (!$saveButton) throw new Error('$saveButton not found!');
 $saveButton.addEventListener('click', saveDate);
 
 function saveDate(): void {
-  if (!currentCelebration) {
-    return;
-  }
   if (!$savePopUp) throw new Error('$savePopUp not found!');
   if (!$holidayName) throw new Error('$holidayName not found!');
-  if (!$holidayName.textContent) {
-    return;
-  }
   if (!$holidayDesc) throw new Error('$holidayDesc not found!');
-  if (!$holidayDesc.textContent) {
+  if (
+    !$holidayName.textContent ||
+    !$holidayDesc.textContent ||
+    !currentCelebration
+  ) {
     return;
   }
   if (!$favorite) throw new Error('$favorite not found!');
@@ -545,8 +543,26 @@ function saveDate(): void {
     desc: $holidayDesc.textContent,
     favorite: $favorite.dataset.favorite === 'y',
     imageReference: currentCelebration,
+    date: `${currentMonth + 1}/${currentDay + 1}/${currentYear + 1}`,
   };
-  if (!data.holidays.some((day) => day.name === holidayToAdd.name)) {
+  if (
+    !data.holidays.some(
+      (day) => day.name === holidayToAdd.name && day.date === holidayToAdd.date,
+    )
+  ) {
+    data.holidays.push(holidayToAdd);
+    storeData();
+  } else {
+    for (let i = 0; i < data.holidays.length; i++) {
+      if (
+        data.holidays[i].name === holidayToAdd.name &&
+        data.holidays[i].date === holidayToAdd.date &&
+        data.holidays[i].favorite !== holidayToAdd.favorite
+      ) {
+        data.holidays.splice(i, 1);
+        break;
+      }
+    }
     data.holidays.push(holidayToAdd);
     storeData();
   }
@@ -566,5 +582,6 @@ function favoriteDate(): void {
     $favorite.dataset.favorite = 'n';
     $favorite.classList.remove('fa-solid');
     $favorite.classList.add('fa-regular');
+    saveDate();
   }
 }

@@ -6,15 +6,14 @@ interface SavedHoliday {
   desc: string;
   favorite: boolean;
   imageReference: string;
+  date: string;
 }
 
 interface Data {
   holidays: SavedHoliday[];
 }
 
-const data: Data = {
-  holidays: [],
-};
+const data = retrieveData();
 
 function storeData(): void {
   const dataJSON = JSON.stringify(data);
