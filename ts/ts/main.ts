@@ -21,21 +21,26 @@ previousDate.setDate(previousDate.getDate() - 1);
 let previousMonth = previousDate.getMonth();
 let previousDay = previousDate.getDate();
 let holidayFound = false;
+const celebrations = ['family-celebration'];
+let currentCelebration: string;
 
 const $calCanvas = document.querySelector('#calendar-canvas');
 const $celeCanvas = document.querySelector('#celebration-canvas');
 const $sidebar = document.querySelector('#sidebar');
 const $holidayName = document.querySelector('#holiday-name');
 const $holidayDesc = document.querySelector('#holiday-desc');
+const $favorite = document.querySelector('#favorite') as HTMLElement;
 const $textSection = document.querySelector('#text-section');
 const $noCelebration = document.querySelector('#no-celebration');
 const $newButton = document.querySelector('#new');
+const $saveButton = document.querySelector('#save');
 const $dateInputDialog = document.querySelector(
   '#date-input-dialog',
 ) as HTMLDialogElement;
 const $dateInputForm = document.querySelector(
   '#date-input-form',
 ) as HTMLFormElement;
+const $savePopUp = document.querySelector('#save-pop-up') as HTMLElement;
 
 interface UpdatedPerspectiveCamera extends THREE.PerspectiveCamera {
   position: Vector3;
@@ -159,7 +164,8 @@ async function delay(time: number): Promise<boolean> {
 
 async function getHoliday(): Promise<void> {
   if (!$holidayName) throw new Error('$holidayName not found!');
-  if (!$holidayDesc) throw new Error('$holidayName not found!');
+  if (!$holidayDesc) throw new Error('$holidayDesc not found!');
+  if (!$favorite) throw new Error('$favorite not found!');
 
   const params = {
     api_key: 'FoSOX7Tl9kyNyP4WRVBqwtHEj7zozDcR',
@@ -181,7 +187,9 @@ async function getHoliday(): Promise<void> {
       }
       celeRenderer.render(celeScene, celeCamera);
       $holidayName.textContent = '';
+      $favorite.classList.add('hidden');
       $holidayDesc.textContent = '';
+      currentCelebration = '';
       holidayFound = false;
       throw new Error(`HTTP error! Status: ${holidaysPromiseResponse.status}`);
     }
@@ -194,6 +202,7 @@ async function getHoliday(): Promise<void> {
       if (chosenHoliday.name && chosenHoliday.description) {
         holidayFound = true;
         $holidayName.textContent = chosenHoliday.name;
+        $favorite.classList.remove('hidden');
         $holidayDesc.textContent = chosenHoliday.description;
       }
     } else {
@@ -204,7 +213,9 @@ async function getHoliday(): Promise<void> {
       }
       celeRenderer.render(celeScene, celeCamera);
       $holidayName.textContent = '';
+      $favorite.classList.add('hidden');
       $holidayDesc.textContent = '';
+      currentCelebration = '';
       holidayFound = false;
     }
   } catch (error) {
@@ -215,7 +226,9 @@ async function getHoliday(): Promise<void> {
     }
     celeRenderer.render(celeScene, celeCamera);
     $holidayName.textContent = '';
+    $favorite.classList.add('hidden');
     $holidayDesc.textContent = '';
+    currentCelebration = '';
     holidayFound = false;
     console.error('Error:', error);
   }
@@ -275,6 +288,11 @@ async function initialCameraMovement(
     }
     nextFrame();
   });
+}
+
+function getRandomCelebration(): void {
+  currentCelebration =
+    celebrations[Math.floor(Math.random() * celebrations.length)];
 }
 
 async function createCalendarScene(): Promise<void> {
@@ -393,8 +411,9 @@ async function createCalendarScene(): Promise<void> {
     if (!$noCelebration) throw new Error('$noCelebration not found!');
     if (holidayFound) {
       $noCelebration.classList.add('hidden');
+      getRandomCelebration();
       const celeGltf = await loadGLTF(
-        '../../objects/celebrations/family-celebration.glb',
+        `../../objects/celebrations/${currentCelebration}.glb`,
       );
       const celeModel = celeGltf.scene;
       celeScene.add(celeModel);
@@ -479,8 +498,9 @@ async function handleDateSearch(event: Event): Promise<void> {
     if (!$noCelebration) throw new Error('$noCelebration not found!');
     if (holidayFound) {
       $noCelebration.classList.add('hidden');
+      getRandomCelebration();
       const celeGltf = await loadGLTF(
-        '../../objects/celebrations/family-celebration.glb',
+        `../../objects/celebrations/${currentCelebration}.glb`,
       );
       const celeModel = celeGltf.scene;
       for (const child of celeScene.children) {
@@ -493,5 +513,75 @@ async function handleDateSearch(event: Event): Promise<void> {
     } else {
       $noCelebration.classList.remove('hidden');
     }
+  }
+}
+
+if (!$saveButton) throw new Error('$saveButton not found!');
+$saveButton.addEventListener('click', saveDate);
+
+function saveDate(): void {
+  if (!$savePopUp) throw new Error('$savePopUp not found!');
+  if (!$holidayName) throw new Error('$holidayName not found!');
+  if (!$holidayDesc) throw new Error('$holidayDesc not found!');
+  if (
+    !$holidayName.textContent ||
+    !$holidayDesc.textContent ||
+    !currentCelebration
+  ) {
+    return;
+  }
+  if (!$favorite) throw new Error('$favorite not found!');
+  $savePopUp.classList.add(
+    'transition-opacity',
+    'duration-500',
+    'ease-in-out',
+    'opacity-100',
+  );
+  setTimeout(() => $savePopUp.classList.remove('opacity-100'), 1000);
+  const holidayToAdd: SavedHoliday = {
+    name: $holidayName.textContent,
+    desc: $holidayDesc.textContent,
+    favorite: $favorite.dataset.favorite === 'y',
+    imageReference: currentCelebration,
+    date: `${currentMonth + 1}/${currentDay + 1}/${currentYear + 1}`,
+  };
+  if (
+    !data.holidays.some(
+      (day) => day.name === holidayToAdd.name && day.date === holidayToAdd.date,
+    )
+  ) {
+    data.holidays.push(holidayToAdd);
+    storeData();
+  } else {
+    for (let i = 0; i < data.holidays.length; i++) {
+      if (
+        data.holidays[i].name === holidayToAdd.name &&
+        data.holidays[i].date === holidayToAdd.date &&
+        data.holidays[i].favorite !== holidayToAdd.favorite
+      ) {
+        data.holidays.splice(i, 1);
+        break;
+      }
+    }
+    data.holidays.push(holidayToAdd);
+    storeData();
+  }
+}
+
+if (!$favorite) throw new Error('$favorite not found!');
+$favorite.addEventListener('click', favoriteDate);
+
+function favoriteDate(): void {
+  if (!$favorite) throw new Error('$favorite not found!');
+  if ($favorite.dataset.favorite === 'n') {
+    $favorite.dataset.favorite = 'y';
+    $favorite.classList.remove('fa-regular');
+    $favorite.classList.add('fa-solid');
+    saveDate();
+  } else {
+    $favorite.dataset.favorite = 'n';
+    $favorite.classList.remove('fa-solid');
+    $favorite.classList.add('fa-regular');
+    saveDate();
   }
 }

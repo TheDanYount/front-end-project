@@ -3,8 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>AJAX Project</title>
-    <link rel="icon" href="images/favicon.ico" />
+    <title>ReasonToCelebrate</title>
     <link rel="stylesheet" href="css/reset.css" />
     <link rel="stylesheet" href="css/layout.css" />
     <link rel="stylesheet" href="css/styles.css" />
@@ -49,20 +48,25 @@
           </button>
         </form>
       </dialog>
-      <i id="new" class="relative fa-solid fa-plus block mx-4 my-[22px]"></i>
-      <i
-        id="save"
-        class="relative fa-solid fa-floppy-disk block mx-4 my-[22px]"></i>
-      <i
-        id="open"
-        class="relative fa-solid fa-folder-open block mx-4 my-[22px]"></i>
+      <div
+        id="save-pop-up"
+        class="absolute left-14 top-12 bg-slate-800 rounded-r-full p-4 pl-0 opacity-0">
+        <p>Saved!</p>
+      </div>
+      <i id="new" class="fa-solid fa-plus block mx-4 my-[22px]"></i>
+      <i id="save" class="fa-solid fa-floppy-disk block mx-4 my-[22px]"></i>
+      <i id="open" class="fa-solid fa-folder-open block mx-4 my-[22px]"></i>
     </div>
     <main>
       <div id="text-section" class="bg-white">
         <div class="relative max-w-[800px] mx-auto py-4">
           <h1
             id="holiday-name"
-            class="mb-4 text-center px-10 font-bold text-3xl lg:text-6xl font-[Calligraffitti]"></h1>
+            class="mb-4 text-center px-10 lg:px-[4.5rem] font-bold text-3xl lg:text-6xl font-[Calligraffitti]"></h1>
+          <i
+            id="favorite"
+            data-favorite="n"
+            class="absolute top-4 right-1 fa-regular fa-star text-amber-400 text-3xl lg:text-6xl hidden"></i>
           <p id="holiday-desc" class="text-xl lg:text-4xl"></p>
         </div>
       </div>
