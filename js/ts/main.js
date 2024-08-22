@@ -4,7 +4,7 @@ import { GLTFLoader } from '../js/GLTFLoader.js';
 const initialDelayBeforeCalendarPageFlip = 1000;
 const breakpointForLarge = 1024;
 const currentDate = new Date();
-//const currentYear = currentDate.getFullYear();
+// const currentYear = currentDate.getFullYear();
 const currentMonth = currentDate.getMonth();
 const currentDay = currentDate.getDate();
 const previousDate = new Date();
@@ -14,10 +14,12 @@ const previousDay = previousDate.getDate();
 let holidayFound = false;
 const $calCanvas = document.querySelector('#calendar-canvas');
 const $celeCanvas = document.querySelector('#celebration-canvas');
+const $sidebar = document.querySelector('#sidebar');
 const $holidayName = document.querySelector('#holiday-name');
 const $holidayDesc = document.querySelector('#holiday-desc');
 const $textSection = document.querySelector('#text-section');
 const $noCelebration = document.querySelector('#no-celebration');
+const $dateInputDialog = document.querySelector('#date-input-dialog');
 /*
 interface Holiday {
   name: string;
@@ -196,10 +198,14 @@ async function createCalendarScene() {
   });
   updateRendererSizeRSS(calRenderer);
   if (!$calCanvas) throw new Error('$calCanvas not found!');
+  if (!$sidebar) throw new Error('$sidebar not found!');
   if (!(window.innerWidth < breakpointForLarge)) {
     $calCanvas.classList.add(
       `left-[${window.innerWidth / 2 - window.innerHeight / 3}px]`,
     );
+    $sidebar.classList.add('top-[calc(50vh-53.5px)]');
+  } else {
+    $sidebar.classList.add('top-[calc(200vw/3-80px)]');
   }
   updateHTMLElementSizes();
   const calCamera = new THREE.PerspectiveCamera(75, 1, 0.1, 50);
@@ -299,3 +305,5 @@ async function createCalendarScene() {
   }
 }
 createCalendarScene();
+if (!$dateInputDialog) throw new Error('$dateInputDialog not found!');
+$dateInputDialog.show();

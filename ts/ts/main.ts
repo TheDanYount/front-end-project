@@ -22,10 +22,14 @@ let holidayFound = false;
 
 const $calCanvas = document.querySelector('#calendar-canvas');
 const $celeCanvas = document.querySelector('#celebration-canvas');
+const $sidebar = document.querySelector('#sidebar');
 const $holidayName = document.querySelector('#holiday-name');
 const $holidayDesc = document.querySelector('#holiday-desc');
 const $textSection = document.querySelector('#text-section');
 const $noCelebration = document.querySelector('#no-celebration');
+const $dateInputDialog = document.querySelector(
+  '#date-input-dialog',
+) as HTMLDialogElement;
 
 interface UpdatedPerspectiveCamera extends THREE.PerspectiveCamera {
   position: Vector3;
@@ -243,10 +247,14 @@ async function createCalendarScene(): Promise<void> {
   }) as WebGLRenderer;
   updateRendererSizeRSS(calRenderer);
   if (!$calCanvas) throw new Error('$calCanvas not found!');
+  if (!$sidebar) throw new Error('$sidebar not found!');
   if (!(window.innerWidth < breakpointForLarge)) {
     $calCanvas.classList.add(
       `left-[${window.innerWidth / 2 - window.innerHeight / 3}px]`,
     );
+    $sidebar.classList.add('top-[calc(50vh-53.5px)]');
+  } else {
+    $sidebar.classList.add('top-[calc(200vw/3-80px)]');
   }
   updateHTMLElementSizes();
   const calCamera = new THREE.PerspectiveCamera(
@@ -363,3 +371,5 @@ async function createCalendarScene(): Promise<void> {
 }
 
 createCalendarScene();
+if (!$dateInputDialog) throw new Error('$dateInputDialog not found!');
+$dateInputDialog.show();
