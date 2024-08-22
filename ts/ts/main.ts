@@ -176,6 +176,7 @@ async function getHoliday(): Promise<void> {
   };
 
   try {
+    /*
     const holidaysPromiseResponse = await fetch(
       `https://calendarific.com/api/v2/holidays?api_key=${params.api_key}&country=${params.country}&year=${params.year}&month=${params.month}&day=${params.day}`,
     );
@@ -218,6 +219,11 @@ async function getHoliday(): Promise<void> {
       currentCelebration = '';
       holidayFound = false;
     }
+    */
+    holidayFound = true;
+    $holidayName.textContent = 'Blah';
+    $favorite.classList.remove('hidden');
+    $holidayDesc.textContent = 'blah blah blah';
   } catch (error) {
     for (const child of celeScene.children) {
       if (child.type === 'Group') {

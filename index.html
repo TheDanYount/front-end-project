@@ -36,7 +36,7 @@
       class="fixed rounded-full bg-slate-800 ml-4 text-white text-2xl text-center">
       <dialog
         id="date-input-dialog"
-        class="absolute p-4 pl-6 ml-8 rounded-3xl bg-slate-800 border-0 outline-0">
+        class="absolute p-4 pl-6 ml-8 rounded-3xl bg-slate-800 border-0 outline-0 z-[-10]">
         <form id="date-input-form">
           <input
             type="date"
@@ -71,6 +71,34 @@
         </div>
       </div>
     </main>
+    <dialog
+      id="open-dialog"
+      class="p-4 rounded-[4rem] bg-slate-800 border-0 outline-0">
+      <i
+        class="absolute top-[2.75rem] right-[2.75rem] fa-solid fa-x text-4xl z-10"></i>
+      <div
+        class="flex flex-wrap gap-4 justify-center bg-white p-4 rounded-[3rem]">
+        <div
+          class="flex flex-col justify-center h-64 lg:w-[24rem] lg:h-[24rem]">
+          <h2
+            class="text-2xl lg:text-5xl font-semibold font-[Calligraffitti] w-64 lg:w-[24rem] text-center">
+            A holiday has yet to be saved!
+          </h2>
+        </div>
+        <div
+          class="hidden flex flex-col flex-wrap gap-2 w-64 lg:w-[24rem] items-center bg-white rounded-[3rem] relative">
+          <img
+            src="./images/celebrations/family-celebration.png"
+            class="w-44 h-44 lg:w-60 lg:h-60" />
+          <i class="absolute bottom-0 right-0 fa-solid fa-trash text-4xl"></i>
+          <h2
+            class="text-2xl lg:text-5xl font-semibold font-[Calligraffitti] w-full text-center">
+            Example Holiday!
+          </h2>
+          <p class="text-base lg:text-3xl">mm/dd/yyyy</p>
+        </div>
+      </div>
+    </dialog>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="js/ts/data.js"></script>
     <script src="js/ts/main.js" type="module"></script>
