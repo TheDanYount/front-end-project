@@ -31,8 +31,31 @@
         All partied out today! Try a new date to see what you can look forward
         to!
       </p>
-
-      <div></div>
+    </div>
+    <div
+      id="sidebar"
+      class="fixed rounded-full bg-slate-800 ml-4 text-white text-2xl text-center">
+      <dialog
+        id="date-input-dialog"
+        class="absolute p-4 pl-6 ml-8 rounded-3xl bg-slate-800 border-0 outline-0">
+        <form id="date-input-form">
+          <input
+            type="date"
+            name="date"
+            class="p-1 rounded-2xl border-0 mb-2 outline-0" />
+          <button
+            class="text-white border-2 rounded-full p-1 px-4 bg-gradient-to-b from-slate-800 from-40% via-slate-600 via-90% to-slate-800">
+            Search
+          </button>
+        </form>
+      </dialog>
+      <i id="new" class="relative fa-solid fa-plus block mx-4 my-[22px]"></i>
+      <i
+        id="save"
+        class="relative fa-solid fa-floppy-disk block mx-4 my-[22px]"></i>
+      <i
+        id="open"
+        class="relative fa-solid fa-folder-open block mx-4 my-[22px]"></i>
     </div>
     <main>
       <div id="text-section" class="bg-white">

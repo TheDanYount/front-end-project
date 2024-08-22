@@ -3,21 +3,34 @@ import { TextureLoader } from '../js/three.module.js';
 import { GLTFLoader } from '../js/GLTFLoader.js';
 const initialDelayBeforeCalendarPageFlip = 1000;
 const breakpointForLarge = 1024;
-const currentDate = new Date();
-const currentYear = currentDate.getFullYear();
-const currentMonth = currentDate.getMonth();
-const currentDay = currentDate.getDate();
-const previousDate = new Date();
+let currentDate = new Date();
+let currentYear = currentDate.getFullYear();
+let currentMonth = currentDate.getMonth();
+let currentDay = currentDate.getDate();
+let previousDate = new Date();
 previousDate.setDate(previousDate.getDate() - 1);
-const previousMonth = previousDate.getMonth();
-const previousDay = previousDate.getDate();
+let previousMonth = previousDate.getMonth();
+let previousDay = previousDate.getDate();
 let holidayFound = false;
 const $calCanvas = document.querySelector('#calendar-canvas');
 const $celeCanvas = document.querySelector('#celebration-canvas');
+const $sidebar = document.querySelector('#sidebar');
 const $holidayName = document.querySelector('#holiday-name');
 const $holidayDesc = document.querySelector('#holiday-desc');
 const $textSection = document.querySelector('#text-section');
 const $noCelebration = document.querySelector('#no-celebration');
+const $newButton = document.querySelector('#new');
+const $dateInputDialog = document.querySelector('#date-input-dialog');
+const $dateInputForm = document.querySelector('#date-input-form');
+let mixer;
+let action;
+let calRenderer;
+let calScene;
+let calCamera;
+let celeRenderer;
+let celeScene;
+let celeCamera;
+let calGltf;
 function updateRendererSizeRSS(renderer) {
   const innerW = window.innerWidth;
   const innerH = window.innerHeight;
@@ -101,6 +114,14 @@ async function getHoliday() {
       `https://calendarific.com/api/v2/holidays?api_key=${params.api_key}&country=${params.country}&year=${params.year}&month=${params.month}&day=${params.day}`,
     );
     if (!holidaysPromiseResponse.ok) {
+      for (const child of celeScene.children) {
+        if (child.type === 'Group') {
+          celeScene.remove(child);
+        }
+      }
+      celeRenderer.render(celeScene, celeCamera);
+      $holidayName.textContent = '';
+      $holidayDesc.textContent = '';
       holidayFound = false;
       throw new Error(`HTTP error! Status: ${holidaysPromiseResponse.status}`);
     }
@@ -115,9 +136,25 @@ async function getHoliday() {
         $holidayDesc.textContent = chosenHoliday.description;
       }
     } else {
+      for (const child of celeScene.children) {
+        if (child.type === 'Group') {
+          celeScene.remove(child);
+        }
+      }
+      celeRenderer.render(celeScene, celeCamera);
+      $holidayName.textContent = '';
+      $holidayDesc.textContent = '';
       holidayFound = false;
     }
   } catch (error) {
+    for (const child of celeScene.children) {
+      if (child.type === 'Group') {
+        celeScene.remove(child);
+      }
+    }
+    celeRenderer.render(celeScene, celeCamera);
+    $holidayName.textContent = '';
+    $holidayDesc.textContent = '';
     holidayFound = false;
     console.error('Error:', error);
   }
@@ -166,41 +203,45 @@ async function initialCameraMovement(camera, renderer, scene) {
   });
 }
 async function createCalendarScene() {
-  const calRenderer = new THREE.WebGLRenderer({
+  calRenderer = new THREE.WebGLRenderer({
     antialias: true,
     canvas: $calCanvas,
   });
   updateRendererSizeRSS(calRenderer);
   if (!$calCanvas) throw new Error('$calCanvas not found!');
+  if (!$sidebar) throw new Error('$sidebar not found!');
   if (!(window.innerWidth < breakpointForLarge)) {
     $calCanvas.classList.add(
       `left-[${window.innerWidth / 2 - window.innerHeight / 3}px]`,
     );
+    $sidebar.classList.add('top-[calc(50vh-53.5px)]');
+  } else {
+    $sidebar.classList.add('top-[calc(200vw/3-80px)]');
   }
   updateHTMLElementSizes();
-  const calCamera = new THREE.PerspectiveCamera(75, 1, 0.1, 50);
+  calCamera = new THREE.PerspectiveCamera(75, 1, 0.1, 50);
   calCamera.position.set(15, 15, 7);
-  const calScene = new THREE.Scene();
+  calScene = new THREE.Scene();
   calScene.background = new THREE.Color(0xeeeeee);
   const calSceneLight = new THREE.DirectionalLight(0xffffff, 5);
   calSceneLight.decay = 0;
   calSceneLight.position.set(10, 18, -20);
   calScene.add(calSceneLight);
-  const celeRenderer = new THREE.WebGLRenderer({
+  celeRenderer = new THREE.WebGLRenderer({
     antialias: true,
     canvas: $celeCanvas,
   });
   updateRendererSizeRSS(celeRenderer);
-  const celeCamera = new THREE.PerspectiveCamera(75, 1, 0.1, 50);
+  celeCamera = new THREE.PerspectiveCamera(75, 1, 0.1, 50);
   celeCamera.position.set(15, 9, 2);
-  const celeScene = new THREE.Scene();
+  celeScene = new THREE.Scene();
   celeScene.background = new THREE.Color(0xeeeeee);
   const celeSceneLight = new THREE.DirectionalLight(0xfdf1bf, 5);
   celeSceneLight.decay = 0;
   celeSceneLight.position.set(10, 18, 0);
   celeScene.add(celeSceneLight);
   try {
-    const calGltf = await loadGLTF('../../objects/calendar.glb');
+    calGltf = await loadGLTF('../../objects/calendar.glb');
     const newTexture1 = await loadTexture(
       `../../images/days/d${previousDay}.png`,
     );
@@ -220,8 +261,9 @@ async function createCalendarScene() {
     const calModel = calGltf.scene;
     calScene.add(calModel);
     calCamera.lookAt(0, 6, 0);
-    const mixer = new THREE.AnimationMixer(calModel);
-    const action = mixer.clipAction(calGltf.animations[0]).play();
+    mixer = new THREE.AnimationMixer(calModel);
+    action = mixer.clipAction(calGltf.animations[0]);
+    action.play();
     action.clampWhenFinished = true;
     action.setLoop(THREE.LoopOnce);
     calRenderer.render(calScene, calCamera);
@@ -275,3 +317,85 @@ async function createCalendarScene() {
   }
 }
 createCalendarScene();
+if (!$sidebar) throw new Error('$sidebar not found!');
+$sidebar.addEventListener('click', sidebarClickHandler);
+function sidebarClickHandler(event) {
+  const eventTarget = event.target;
+  if (eventTarget === $newButton) {
+    if (!$dateInputDialog) throw new Error('$dateInputDialog not found!');
+    if (!$dateInputDialog.open) {
+      $dateInputDialog.show();
+    } else {
+      $dateInputDialog.close();
+      if (!$dateInputForm) throw new Error('$dateInputForm not found!');
+      $dateInputForm.reset();
+    }
+  }
+}
+if (!$dateInputForm) throw new Error('$dateInputForm not found!');
+$dateInputForm.addEventListener('submit', handleDateSearch);
+async function handleDateSearch(event) {
+  event.preventDefault();
+  const elements = $dateInputForm.elements;
+  const dateString = elements.date.value;
+  if (dateString.length === 10) {
+    $dateInputForm.reset();
+    $dateInputDialog.close();
+    const year = Number(dateString.slice(0, 4));
+    const month = Number(dateString.slice(-5, -3)) - 1;
+    const day = Number(dateString.slice(-2));
+    const newDate = new Date(year, month, day);
+    previousDate = currentDate;
+    previousDay = currentDay;
+    previousMonth = currentMonth;
+    currentDate = newDate;
+    currentYear = year;
+    currentMonth = month;
+    currentDay = day;
+    const newTexture1 = await loadTexture(
+      `../../images/days/d${previousDay}.png`,
+    );
+    const newTexture2 = await loadTexture(
+      `../../images/months/m${previousMonth + 1}.png`,
+    );
+    const newTexture3 = await loadTexture(
+      `../../images/days/d${currentDay}.png`,
+    );
+    const newTexture4 = await loadTexture(
+      `../../images/months/m${currentMonth + 1}.png`,
+    );
+    updateTextures(
+      [newTexture1, newTexture2, newTexture3, newTexture4],
+      calGltf,
+    );
+    action.stop();
+    action.time = 0;
+    action.play();
+    await animate(
+      mixer,
+      action,
+      calRenderer,
+      calScene,
+      calCamera,
+      action.getClip().duration,
+    );
+    await getHoliday();
+    if (!$noCelebration) throw new Error('$noCelebration not found!');
+    if (holidayFound) {
+      $noCelebration.classList.add('hidden');
+      const celeGltf = await loadGLTF(
+        '../../objects/celebrations/family-celebration.glb',
+      );
+      const celeModel = celeGltf.scene;
+      for (const child of celeScene.children) {
+        if (child.type === 'Group') {
+          celeScene.remove(child);
+        }
+      }
+      celeScene.add(celeModel);
+      celeRenderer.render(celeScene, celeCamera);
+    } else {
+      $noCelebration.classList.remove('hidden');
+    }
+  }
+}
