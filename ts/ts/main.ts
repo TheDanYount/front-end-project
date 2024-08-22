@@ -10,14 +10,14 @@ import { GLTFLoader } from '../js/GLTFLoader.js';
 const initialDelayBeforeCalendarPageFlip = 1000;
 const breakpointForLarge = 1024;
 
-const currentDate = new Date();
-// const currentYear = currentDate.getFullYear();
-const currentMonth = currentDate.getMonth();
-const currentDay = currentDate.getDate();
-const previousDate = new Date();
+let currentDate = new Date();
+let currentYear = currentDate.getFullYear();
+let currentMonth = currentDate.getMonth();
+let currentDay = currentDate.getDate();
+let previousDate = new Date();
 previousDate.setDate(previousDate.getDate() - 1);
-const previousMonth = previousDate.getMonth();
-const previousDay = previousDate.getDate();
+let previousMonth = previousDate.getMonth();
+let previousDay = previousDate.getDate();
 let holidayFound = false;
 
 const $calCanvas = document.querySelector('#calendar-canvas');
@@ -27,9 +27,15 @@ const $holidayName = document.querySelector('#holiday-name');
 const $holidayDesc = document.querySelector('#holiday-desc');
 const $textSection = document.querySelector('#text-section');
 const $noCelebration = document.querySelector('#no-celebration');
+const $newButton = document.querySelector('#new');
+const $saveButton = document.querySelector('#save');
+const $openButton = document.querySelector('#open');
 const $dateInputDialog = document.querySelector(
   '#date-input-dialog',
 ) as HTMLDialogElement;
+const $dateInputForm = document.querySelector(
+  '#date-input-form',
+) as HTMLFormElement;
 
 interface UpdatedPerspectiveCamera extends THREE.PerspectiveCamera {
   position: Vector3;
@@ -63,6 +69,11 @@ interface HolidaysObject extends Promise<object> {
   response: HolidayResponseObject;
 }
 */
+
+interface dateInputSubmission extends HTMLFormControlsCollection {
+  date: HTMLInputElement;
+}
+
 function updateRendererSizeRSS(renderer: WebGLRenderer): void {
   const innerW = window.innerWidth;
   const innerH = window.innerHeight;
@@ -371,5 +382,44 @@ async function createCalendarScene(): Promise<void> {
 }
 
 createCalendarScene();
-if (!$dateInputDialog) throw new Error('$dateInputDialog not found!');
-$dateInputDialog.show();
+
+if (!$sidebar) throw new Error('$sidebar not found!');
+$sidebar.addEventListener('click', sidebarClickHandler);
+
+function sidebarClickHandler(event: Event): void {
+  const eventTarget = event.target;
+  if (eventTarget === $newButton) {
+    if (!$dateInputDialog) throw new Error('$dateInputDialog not found!');
+    if (!$dateInputDialog.open) {
+      $dateInputDialog.show();
+    } else {
+      $dateInputDialog.close();
+      if (!$dateInputForm) throw new Error('$dateInputForm not found!');
+      $dateInputForm.reset();
+    }
+  }
+}
+
+if (!$dateInputForm) throw new Error('$dateInputForm not found!');
+$dateInputForm.addEventListener('submit', handleDateSearch);
+
+function handleDateSearch(event: Event): void {
+  event.preventDefault();
+  const elements = $dateInputForm.elements as dateInputSubmission;
+  const dateString = elements.date.value;
+  if (dateString.length === 10) {
+    const year = Number(dateString.slice(0, 4));
+    const month = Number(dateString.slice(-5, -3)) - 1;
+    const day = Number(dateString.slice(-2));
+    const newDate = new Date(year, month, day);
+    previousDate = currentDate;
+    previousDay = currentDay;
+    previousMonth = currentMonth;
+    currentDate = newDate;
+    currentYear = year;
+    currentMonth = month;
+    currentDay = day;
+  }
+  $dateInputForm.reset();
+  $dateInputDialog.close();
+}
