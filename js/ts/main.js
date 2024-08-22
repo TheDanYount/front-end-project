@@ -20,10 +20,14 @@ const $holidayDesc = document.querySelector('#holiday-desc');
 const $textSection = document.querySelector('#text-section');
 const $noCelebration = document.querySelector('#no-celebration');
 const $newButton = document.querySelector('#new');
-const $saveButton = document.querySelector('#save');
-const $openButton = document.querySelector('#open');
 const $dateInputDialog = document.querySelector('#date-input-dialog');
 const $dateInputForm = document.querySelector('#date-input-form');
+let mixer;
+let action;
+let calRenderer;
+let calScene;
+let calCamera;
+let calGltf;
 function updateRendererSizeRSS(renderer) {
     const innerW = window.innerWidth;
     const innerH = window.innerHeight;
@@ -173,7 +177,7 @@ async function initialCameraMovement(camera, renderer, scene) {
     });
 }
 async function createCalendarScene() {
-    const calRenderer = new THREE.WebGLRenderer({
+    calRenderer = new THREE.WebGLRenderer({
         antialias: true,
         canvas: $calCanvas,
     });
@@ -190,9 +194,9 @@ async function createCalendarScene() {
         $sidebar.classList.add('top-[calc(200vw/3-80px)]');
     }
     updateHTMLElementSizes();
-    const calCamera = new THREE.PerspectiveCamera(75, 1, 0.1, 50);
+    calCamera = new THREE.PerspectiveCamera(75, 1, 0.1, 50);
     calCamera.position.set(15, 15, 7);
-    const calScene = new THREE.Scene();
+    calScene = new THREE.Scene();
     calScene.background = new THREE.Color(0xeeeeee);
     const calSceneLight = new THREE.DirectionalLight(0xffffff, 5);
     calSceneLight.decay = 0;
@@ -212,7 +216,7 @@ async function createCalendarScene() {
     celeSceneLight.position.set(10, 18, 0);
     celeScene.add(celeSceneLight);
     try {
-        const calGltf = await loadGLTF('../../objects/calendar.glb');
+        calGltf = await loadGLTF('../../objects/calendar.glb');
         const newTexture1 = await loadTexture(`../../images/days/d${previousDay}.png`);
         const newTexture2 = await loadTexture(`../../images/months/m${previousMonth + 1}.png`);
         const newTexture3 = await loadTexture(`../../images/days/d${currentDay}.png`);
@@ -221,8 +225,9 @@ async function createCalendarScene() {
         const calModel = calGltf.scene;
         calScene.add(calModel);
         calCamera.lookAt(0, 6, 0);
-        const mixer = new THREE.AnimationMixer(calModel);
-        const action = mixer.clipAction(calGltf.animations[0]).play();
+        mixer = new THREE.AnimationMixer(calModel);
+        action = mixer.clipAction(calGltf.animations[0]);
+        action.play();
         action.clampWhenFinished = true;
         action.setLoop(THREE.LoopOnce);
         calRenderer.render(calScene, calCamera);
@@ -277,7 +282,7 @@ function sidebarClickHandler(event) {
 if (!$dateInputForm)
     throw new Error('$dateInputForm not found!');
 $dateInputForm.addEventListener('submit', handleDateSearch);
-function handleDateSearch(event) {
+async function handleDateSearch(event) {
     event.preventDefault();
     const elements = $dateInputForm.elements;
     const dateString = elements.date.value;
@@ -293,6 +298,15 @@ function handleDateSearch(event) {
         currentYear = year;
         currentMonth = month;
         currentDay = day;
+        const newTexture1 = await loadTexture(`../../images/days/d${previousDay}.png`);
+        const newTexture2 = await loadTexture(`../../images/months/m${previousMonth + 1}.png`);
+        const newTexture3 = await loadTexture(`../../images/days/d${currentDay}.png`);
+        const newTexture4 = await loadTexture(`../../images/months/m${currentMonth + 1}.png`);
+        updateTextures([newTexture1, newTexture2, newTexture3, newTexture4], calGltf);
+        action.stop();
+        action.time = 0;
+        action.play();
+        animate(mixer, action, calRenderer, calScene, calCamera, action.getClip().duration);
     }
     $dateInputForm.reset();
     $dateInputDialog.close();

@@ -4,6 +4,8 @@ import {
   Scene,
   WebGLRenderer,
   Vector3,
+  AnimationMixer,
+  AnimationAction,
 } from '../js/three.module.js';
 import { GLTFLoader } from '../js/GLTFLoader.js';
 
@@ -28,8 +30,6 @@ const $holidayDesc = document.querySelector('#holiday-desc');
 const $textSection = document.querySelector('#text-section');
 const $noCelebration = document.querySelector('#no-celebration');
 const $newButton = document.querySelector('#new');
-const $saveButton = document.querySelector('#save');
-const $openButton = document.querySelector('#open');
 const $dateInputDialog = document.querySelector(
   '#date-input-dialog',
 ) as HTMLDialogElement;
@@ -73,6 +73,13 @@ interface HolidaysObject extends Promise<object> {
 interface dateInputSubmission extends HTMLFormControlsCollection {
   date: HTMLInputElement;
 }
+
+let mixer: AnimationMixer;
+let action: AnimationAction;
+let calRenderer: WebGLRenderer;
+let calScene: Scene;
+let calCamera: UpdatedPerspectiveCamera;
+let calGltf: GLTF;
 
 function updateRendererSizeRSS(renderer: WebGLRenderer): void {
   const innerW = window.innerWidth;
@@ -196,8 +203,8 @@ async function getHoliday(): Promise<void> {
 }
 
 async function animate(
-  mixer: THREE.AnimationMixer,
-  action: THREE.AnimationAction,
+  mixer: AnimationMixer,
+  action: AnimationAction,
   renderer: WebGLRenderer,
   scene: Scene,
   camera: UpdatedPerspectiveCamera,
@@ -252,7 +259,7 @@ async function initialCameraMovement(
 }
 
 async function createCalendarScene(): Promise<void> {
-  const calRenderer = new THREE.WebGLRenderer({
+  calRenderer = new THREE.WebGLRenderer({
     antialias: true,
     canvas: $calCanvas,
   }) as WebGLRenderer;
@@ -268,14 +275,14 @@ async function createCalendarScene(): Promise<void> {
     $sidebar.classList.add('top-[calc(200vw/3-80px)]');
   }
   updateHTMLElementSizes();
-  const calCamera = new THREE.PerspectiveCamera(
+  calCamera = new THREE.PerspectiveCamera(
     75,
     1,
     0.1,
     50,
   ) as UpdatedPerspectiveCamera;
   calCamera.position.set(15, 15, 7);
-  const calScene = new THREE.Scene();
+  calScene = new THREE.Scene();
   calScene.background = new THREE.Color(0xeeeeee);
   const calSceneLight = new THREE.DirectionalLight(
     0xffffff,
@@ -306,7 +313,7 @@ async function createCalendarScene(): Promise<void> {
   celeSceneLight.position.set(10, 18, 0);
   celeScene.add(celeSceneLight);
   try {
-    const calGltf = await loadGLTF('../../objects/calendar.glb');
+    calGltf = await loadGLTF('../../objects/calendar.glb');
     const newTexture1 = await loadTexture(
       `../../images/days/d${previousDay}.png`,
     );
@@ -326,8 +333,9 @@ async function createCalendarScene(): Promise<void> {
     const calModel = calGltf.scene;
     calScene.add(calModel);
     calCamera.lookAt(0, 6, 0);
-    const mixer = new THREE.AnimationMixer(calModel);
-    const action = mixer.clipAction(calGltf.animations[0]).play();
+    mixer = new THREE.AnimationMixer(calModel);
+    action = mixer.clipAction(calGltf.animations[0]);
+    action.play();
     action.clampWhenFinished = true;
     action.setLoop(THREE.LoopOnce);
     calRenderer.render(calScene, calCamera);
@@ -403,7 +411,7 @@ function sidebarClickHandler(event: Event): void {
 if (!$dateInputForm) throw new Error('$dateInputForm not found!');
 $dateInputForm.addEventListener('submit', handleDateSearch);
 
-function handleDateSearch(event: Event): void {
+async function handleDateSearch(event: Event): Promise<void> {
   event.preventDefault();
   const elements = $dateInputForm.elements as dateInputSubmission;
   const dateString = elements.date.value;
@@ -419,6 +427,33 @@ function handleDateSearch(event: Event): void {
     currentYear = year;
     currentMonth = month;
     currentDay = day;
+    const newTexture1 = await loadTexture(
+      `../../images/days/d${previousDay}.png`,
+    );
+    const newTexture2 = await loadTexture(
+      `../../images/months/m${previousMonth + 1}.png`,
+    );
+    const newTexture3 = await loadTexture(
+      `../../images/days/d${currentDay}.png`,
+    );
+    const newTexture4 = await loadTexture(
+      `../../images/months/m${currentMonth + 1}.png`,
+    );
+    updateTextures(
+      [newTexture1, newTexture2, newTexture3, newTexture4],
+      calGltf,
+    );
+    action.stop();
+    action.time = 0;
+    action.play();
+    animate(
+      mixer,
+      action,
+      calRenderer,
+      calScene,
+      calCamera,
+      action.getClip().duration,
+    );
   }
   $dateInputForm.reset();
   $dateInputDialog.close();
