@@ -176,7 +176,6 @@ async function getHoliday(): Promise<void> {
   };
 
   try {
-    /*
     const holidaysPromiseResponse = await fetch(
       `https://calendarific.com/api/v2/holidays?api_key=${params.api_key}&country=${params.country}&year=${params.year}&month=${params.month}&day=${params.day}`,
     );
@@ -188,8 +187,9 @@ async function getHoliday(): Promise<void> {
       }
       celeRenderer.render(celeScene, celeCamera);
       $holidayName.textContent = '';
-    $favorite.classList.add('hidden');
+      $favorite.classList.add('hidden');
       $holidayDesc.textContent = '';
+      currentCelebration = '';
       holidayFound = false;
       throw new Error(`HTTP error! Status: ${holidaysPromiseResponse.status}`);
     }
@@ -202,7 +202,7 @@ async function getHoliday(): Promise<void> {
       if (chosenHoliday.name && chosenHoliday.description) {
         holidayFound = true;
         $holidayName.textContent = chosenHoliday.name;
-    $favorite.classList.remove('hidden');
+        $favorite.classList.remove('hidden');
         $holidayDesc.textContent = chosenHoliday.description;
       }
     } else {
@@ -213,15 +213,11 @@ async function getHoliday(): Promise<void> {
       }
       celeRenderer.render(celeScene, celeCamera);
       $holidayName.textContent = '';
-    $favorite.classList.add('hidden');
+      $favorite.classList.add('hidden');
       $holidayDesc.textContent = '';
+      currentCelebration = '';
       holidayFound = false;
     }
-      */
-    holidayFound = true;
-    $holidayName.textContent = 'Blah';
-    $favorite.classList.remove('hidden');
-    $holidayDesc.textContent = 'blah blah blah';
   } catch (error) {
     for (const child of celeScene.children) {
       if (child.type === 'Group') {
@@ -232,6 +228,7 @@ async function getHoliday(): Promise<void> {
     $holidayName.textContent = '';
     $favorite.classList.add('hidden');
     $holidayDesc.textContent = '';
+    currentCelebration = '';
     holidayFound = false;
     console.error('Error:', error);
   }
@@ -501,6 +498,7 @@ async function handleDateSearch(event: Event): Promise<void> {
     if (!$noCelebration) throw new Error('$noCelebration not found!');
     if (holidayFound) {
       $noCelebration.classList.add('hidden');
+      getRandomCelebration();
       const celeGltf = await loadGLTF(
         `../../objects/celebrations/${currentCelebration}.glb`,
       );
@@ -521,8 +519,20 @@ async function handleDateSearch(event: Event): Promise<void> {
 if (!$saveButton) throw new Error('$saveButton not found!');
 $saveButton.addEventListener('click', saveDate);
 
-function saveDate() {
+function saveDate(): void {
+  if (!currentCelebration) {
+    return;
+  }
   if (!$savePopUp) throw new Error('$savePopUp not found!');
+  if (!$holidayName) throw new Error('$holidayName not found!');
+  if (!$holidayName.textContent) {
+    return;
+  }
+  if (!$holidayDesc) throw new Error('$holidayDesc not found!');
+  if (!$holidayDesc.textContent) {
+    return;
+  }
+  if (!$favorite) throw new Error('$favorite not found!');
   $savePopUp.classList.add(
     'transition-opacity',
     'duration-500',
@@ -530,12 +540,22 @@ function saveDate() {
     'opacity-100',
   );
   setTimeout(() => $savePopUp.classList.remove('opacity-100'), 1000);
+  const holidayToAdd: SavedHoliday = {
+    name: $holidayName.textContent,
+    desc: $holidayDesc.textContent,
+    favorite: $favorite.dataset.favorite === 'y',
+    imageReference: currentCelebration,
+  };
+  if (!data.holidays.some((day) => day.name === holidayToAdd.name)) {
+    data.holidays.push(holidayToAdd);
+    storeData();
+  }
 }
 
 if (!$favorite) throw new Error('$favorite not found!');
 $favorite.addEventListener('click', favoriteDate);
 
-function favoriteDate() {
+function favoriteDate(): void {
   if (!$favorite) throw new Error('$favorite not found!');
   if ($favorite.dataset.favorite === 'n') {
     $favorite.dataset.favorite = 'y';
