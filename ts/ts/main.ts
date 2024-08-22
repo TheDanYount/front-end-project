@@ -55,7 +55,7 @@ interface GLTF {
   meshes: THREE.Mesh[];
   textures: THREE.Texture[];
 }
-/*
+
 interface Holiday {
   name: string;
   description: string;
@@ -68,7 +68,6 @@ interface HolidayResponseObject {
 interface HolidaysObject extends Promise<object> {
   response: HolidayResponseObject;
 }
-*/
 
 interface dateInputSubmission extends HTMLFormControlsCollection {
   date: HTMLInputElement;
@@ -79,6 +78,9 @@ let action: AnimationAction;
 let calRenderer: WebGLRenderer;
 let calScene: Scene;
 let calCamera: UpdatedPerspectiveCamera;
+let celeRenderer: WebGLRenderer;
+let celeScene: Scene;
+let celeCamera: UpdatedPerspectiveCamera;
 let calGltf: GLTF;
 
 function updateRendererSizeRSS(renderer: WebGLRenderer): void {
@@ -158,7 +160,7 @@ async function delay(time: number): Promise<boolean> {
 async function getHoliday(): Promise<void> {
   if (!$holidayName) throw new Error('$holidayName not found!');
   if (!$holidayDesc) throw new Error('$holidayName not found!');
-  /*
+
   const params = {
     api_key: 'FoSOX7Tl9kyNyP4WRVBqwtHEj7zozDcR',
     country: 'us',
@@ -166,13 +168,20 @@ async function getHoliday(): Promise<void> {
     month: currentMonth + 1,
     day: currentDay,
   };
-*/
+
   try {
-    /*
     const holidaysPromiseResponse = await fetch(
       `https://calendarific.com/api/v2/holidays?api_key=${params.api_key}&country=${params.country}&year=${params.year}&month=${params.month}&day=${params.day}`,
     );
     if (!holidaysPromiseResponse.ok) {
+      for (const child of celeScene.children) {
+        if (child.type === 'Group') {
+          celeScene.remove(child);
+        }
+      }
+      celeRenderer.render(celeScene, celeCamera);
+      $holidayName.textContent = '';
+      $holidayDesc.textContent = '';
       holidayFound = false;
       throw new Error(`HTTP error! Status: ${holidaysPromiseResponse.status}`);
     }
@@ -188,15 +197,25 @@ async function getHoliday(): Promise<void> {
         $holidayDesc.textContent = chosenHoliday.description;
       }
     } else {
+      for (const child of celeScene.children) {
+        if (child.type === 'Group') {
+          celeScene.remove(child);
+        }
+      }
+      celeRenderer.render(celeScene, celeCamera);
+      $holidayName.textContent = '';
+      $holidayDesc.textContent = '';
       holidayFound = false;
     }
-    */
-    holidayFound = true;
-    $holidayName.textContent =
-      'International Day of Remembrance of and Tribute to the Victims of Terrorism';
-    $holidayDesc.textContent =
-      'International Day of Remembrance of and Tribute to the Victims of Terrorism is a United Nations observance in the USA';
   } catch (error) {
+    for (const child of celeScene.children) {
+      if (child.type === 'Group') {
+        celeScene.remove(child);
+      }
+    }
+    celeRenderer.render(celeScene, celeCamera);
+    $holidayName.textContent = '';
+    $holidayDesc.textContent = '';
     holidayFound = false;
     console.error('Error:', error);
   }
@@ -291,19 +310,19 @@ async function createCalendarScene(): Promise<void> {
   calSceneLight.decay = 0;
   calSceneLight.position.set(10, 18, -20);
   calScene.add(calSceneLight);
-  const celeRenderer = new THREE.WebGLRenderer({
+  celeRenderer = new THREE.WebGLRenderer({
     antialias: true,
     canvas: $celeCanvas,
   }) as WebGLRenderer;
   updateRendererSizeRSS(celeRenderer);
-  const celeCamera = new THREE.PerspectiveCamera(
+  celeCamera = new THREE.PerspectiveCamera(
     75,
     1,
     0.1,
     50,
   ) as UpdatedPerspectiveCamera;
   celeCamera.position.set(15, 9, 2);
-  const celeScene = new THREE.Scene();
+  celeScene = new THREE.Scene();
   celeScene.background = new THREE.Color(0xeeeeee);
   const celeSceneLight = new THREE.DirectionalLight(
     0xfdf1bf,
@@ -416,6 +435,8 @@ async function handleDateSearch(event: Event): Promise<void> {
   const elements = $dateInputForm.elements as dateInputSubmission;
   const dateString = elements.date.value;
   if (dateString.length === 10) {
+    $dateInputForm.reset();
+    $dateInputDialog.close();
     const year = Number(dateString.slice(0, 4));
     const month = Number(dateString.slice(-5, -3)) - 1;
     const day = Number(dateString.slice(-2));
@@ -446,7 +467,7 @@ async function handleDateSearch(event: Event): Promise<void> {
     action.stop();
     action.time = 0;
     action.play();
-    animate(
+    await animate(
       mixer,
       action,
       calRenderer,
@@ -454,7 +475,23 @@ async function handleDateSearch(event: Event): Promise<void> {
       calCamera,
       action.getClip().duration,
     );
+    await getHoliday();
+    if (!$noCelebration) throw new Error('$noCelebration not found!');
+    if (holidayFound) {
+      $noCelebration.classList.add('hidden');
+      const celeGltf = await loadGLTF(
+        '../../objects/celebrations/family-celebration.glb',
+      );
+      const celeModel = celeGltf.scene;
+      for (const child of celeScene.children) {
+        if (child.type === 'Group') {
+          celeScene.remove(child);
+        }
+      }
+      celeScene.add(celeModel);
+      celeRenderer.render(celeScene, celeCamera);
+    } else {
+      $noCelebration.classList.remove('hidden');
+    }
   }
-  $dateInputForm.reset();
-  $dateInputDialog.close();
 }
