@@ -21,6 +21,8 @@ previousDate.setDate(previousDate.getDate() - 1);
 let previousMonth = previousDate.getMonth();
 let previousDay = previousDate.getDate();
 let holidayFound = false;
+const celebrations = ['family-celebration'];
+let currentCelebration: string;
 
 const $calCanvas = document.querySelector('#calendar-canvas');
 const $celeCanvas = document.querySelector('#celebration-canvas');
@@ -292,6 +294,11 @@ async function initialCameraMovement(
   });
 }
 
+function getRandomCelebration(): void {
+  currentCelebration =
+    celebrations[Math.floor(Math.random() * celebrations.length)];
+}
+
 async function createCalendarScene(): Promise<void> {
   calRenderer = new THREE.WebGLRenderer({
     antialias: true,
@@ -408,8 +415,9 @@ async function createCalendarScene(): Promise<void> {
     if (!$noCelebration) throw new Error('$noCelebration not found!');
     if (holidayFound) {
       $noCelebration.classList.add('hidden');
+      getRandomCelebration();
       const celeGltf = await loadGLTF(
-        '../../objects/celebrations/family-celebration.glb',
+        `../../objects/celebrations/${currentCelebration}.glb`,
       );
       const celeModel = celeGltf.scene;
       celeScene.add(celeModel);
@@ -495,7 +503,7 @@ async function handleDateSearch(event: Event): Promise<void> {
     if (holidayFound) {
       $noCelebration.classList.add('hidden');
       const celeGltf = await loadGLTF(
-        '../../objects/celebrations/family-celebration.glb',
+        `../../objects/celebrations/${currentCelebration}.glb`,
       );
       const celeModel = celeGltf.scene;
       for (const child of celeScene.children) {
