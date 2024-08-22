@@ -11,7 +11,7 @@ const initialDelayBeforeCalendarPageFlip = 1000;
 const breakpointForLarge = 1024;
 
 const currentDate = new Date();
-const currentYear = currentDate.getFullYear();
+// const currentYear = currentDate.getFullYear();
 const currentMonth = currentDate.getMonth();
 const currentDay = currentDate.getDate();
 const previousDate = new Date();
@@ -45,7 +45,7 @@ interface GLTF {
   meshes: THREE.Mesh[];
   textures: THREE.Texture[];
 }
-
+/*
 interface Holiday {
   name: string;
   description: string;
@@ -58,7 +58,7 @@ interface HolidayResponseObject {
 interface HolidaysObject extends Promise<object> {
   response: HolidayResponseObject;
 }
-
+*/
 function updateRendererSizeRSS(renderer: WebGLRenderer): void {
   const innerW = window.innerWidth;
   const innerH = window.innerHeight;
@@ -136,7 +136,7 @@ async function delay(time: number): Promise<boolean> {
 async function getHoliday(): Promise<void> {
   if (!$holidayName) throw new Error('$holidayName not found!');
   if (!$holidayDesc) throw new Error('$holidayName not found!');
-
+  /*
   const params = {
     api_key: 'FoSOX7Tl9kyNyP4WRVBqwtHEj7zozDcR',
     country: 'us',
@@ -144,8 +144,9 @@ async function getHoliday(): Promise<void> {
     month: currentMonth + 1,
     day: currentDay,
   };
-
+*/
   try {
+    /*
     const holidaysPromiseResponse = await fetch(
       `https://calendarific.com/api/v2/holidays?api_key=${params.api_key}&country=${params.country}&year=${params.year}&month=${params.month}&day=${params.day}`,
     );
@@ -167,6 +168,12 @@ async function getHoliday(): Promise<void> {
     } else {
       holidayFound = false;
     }
+    */
+    holidayFound = true;
+    $holidayName.textContent =
+      'International Day of Remembrance of and Tribute to the Victims of Terrorism';
+    $holidayDesc.textContent =
+      'International Day of Remembrance of and Tribute to the Victims of Terrorism is a United Nations observance in the USA';
   } catch (error) {
     holidayFound = false;
     console.error('Error:', error);

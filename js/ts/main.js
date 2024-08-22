@@ -4,7 +4,7 @@ import { GLTFLoader } from '../js/GLTFLoader.js';
 const initialDelayBeforeCalendarPageFlip = 1000;
 const breakpointForLarge = 1024;
 const currentDate = new Date();
-const currentYear = currentDate.getFullYear();
+//const currentYear = currentDate.getFullYear();
 const currentMonth = currentDate.getMonth();
 const currentDay = currentDate.getDate();
 const previousDate = new Date();
@@ -18,6 +18,20 @@ const $holidayName = document.querySelector('#holiday-name');
 const $holidayDesc = document.querySelector('#holiday-desc');
 const $textSection = document.querySelector('#text-section');
 const $noCelebration = document.querySelector('#no-celebration');
+/*
+interface Holiday {
+  name: string;
+  description: string;
+}
+
+interface HolidayResponseObject {
+  holidays: Holiday[];
+}
+
+interface HolidaysObject extends Promise<object> {
+  response: HolidayResponseObject;
+}
+*/
 function updateRendererSizeRSS(renderer) {
   const innerW = window.innerWidth;
   const innerH = window.innerHeight;
@@ -89,34 +103,44 @@ async function delay(time) {
 async function getHoliday() {
   if (!$holidayName) throw new Error('$holidayName not found!');
   if (!$holidayDesc) throw new Error('$holidayName not found!');
-  const params = {
-    api_key: 'FoSOX7Tl9kyNyP4WRVBqwtHEj7zozDcR',
-    country: 'us',
-    year: currentYear,
-    month: currentMonth + 1,
-    day: currentDay,
-  };
+  /*
+    const params = {
+      api_key: 'FoSOX7Tl9kyNyP4WRVBqwtHEj7zozDcR',
+      country: 'us',
+      year: currentYear,
+      month: currentMonth + 1,
+      day: currentDay,
+    };
+  */
   try {
-    const holidaysPromiseResponse = await fetch(
-      `https://calendarific.com/api/v2/holidays?api_key=${params.api_key}&country=${params.country}&year=${params.year}&month=${params.month}&day=${params.day}`,
-    );
-    if (!holidaysPromiseResponse.ok) {
-      holidayFound = false;
-      throw new Error(`HTTP error! Status: ${holidaysPromiseResponse.status}`);
-    }
-    const holidaysObject = await holidaysPromiseResponse.json();
-    const holidaysArray = holidaysObject.response.holidays;
-    if (holidaysArray.length > 0) {
-      const chosenHoliday =
-        holidaysArray[Math.floor(Math.random() * holidaysArray.length)];
-      if (chosenHoliday.name && chosenHoliday.description) {
-        holidayFound = true;
-        $holidayName.textContent = chosenHoliday.name;
-        $holidayDesc.textContent = chosenHoliday.description;
-      }
-    } else {
-      holidayFound = false;
-    }
+    /*
+        const holidaysPromiseResponse = await fetch(
+          `https://calendarific.com/api/v2/holidays?api_key=${params.api_key}&country=${params.country}&year=${params.year}&month=${params.month}&day=${params.day}`,
+        );
+        if (!holidaysPromiseResponse.ok) {
+          holidayFound = false;
+          throw new Error(`HTTP error! Status: ${holidaysPromiseResponse.status}`);
+        }
+        const holidaysObject =
+          (await holidaysPromiseResponse.json()) as HolidaysObject;
+        const holidaysArray = holidaysObject.response.holidays;
+        if (holidaysArray.length > 0) {
+          const chosenHoliday =
+            holidaysArray[Math.floor(Math.random() * holidaysArray.length)];
+          if (chosenHoliday.name && chosenHoliday.description) {
+            holidayFound = true;
+            $holidayName.textContent = chosenHoliday.name;
+            $holidayDesc.textContent = chosenHoliday.description;
+          }
+        } else {
+          holidayFound = false;
+        }
+        */
+    holidayFound = true;
+    $holidayName.textContent =
+      'International Day of Remembrance of and Tribute to the Victims of Terrorism';
+    $holidayDesc.textContent =
+      'International Day of Remembrance of and Tribute to the Victims of Terrorism is a United Nations observance in the USA';
   } catch (error) {
     holidayFound = false;
     console.error('Error:', error);
