@@ -24,9 +24,16 @@ const $textSection = document.querySelector('#text-section');
 const $noCelebration = document.querySelector('#no-celebration');
 const $newButton = document.querySelector('#new');
 const $saveButton = document.querySelector('#save');
+const $openButton = document.querySelector('#open');
 const $dateInputDialog = document.querySelector('#date-input-dialog');
 const $dateInputForm = document.querySelector('#date-input-form');
 const $savePopUp = document.querySelector('#save-pop-up');
+const $openDialog = document.querySelector('#open-dialog');
+const $closeOpenDialog = document.querySelector('#close-open-dialog');
+const $openDialogContent = document.querySelector('#open-dialog-content');
+const $savedHolidayPlaceholder = document.querySelector(
+  '#saved-holiday-placeholder',
+);
 let mixer;
 let action;
 let calRenderer;
@@ -143,6 +150,32 @@ async function getHoliday() {
         $holidayName.textContent = chosenHoliday.name;
         $favorite.classList.remove('hidden');
         $holidayDesc.textContent = chosenHoliday.description;
+        const stringMonth =
+          currentMonth + 1 >= 10
+            ? String(currentMonth + 1)
+            : '0' + (currentMonth + 1);
+        const stringDay =
+          currentDay >= 10 ? String(currentDay) : '0' + currentDay;
+        const stringDate = `${stringMonth}/${stringDay}/${currentYear}`;
+        const match = data.holidays.find((holiday) => {
+          if (
+            chosenHoliday.name === holiday.name &&
+            stringDate === holiday.date
+          ) {
+            return true;
+          } else {
+            return false;
+          }
+        });
+        if (match) {
+          if (match.favorite) {
+            $favorite.classList.remove('fa-regular');
+            $favorite.classList.add('fa-solid');
+          } else {
+            $favorite.classList.remove('fa-solid');
+            $favorite.classList.add('fa-regular');
+          }
+        }
       }
     } else {
       for (const child of celeScene.children) {
@@ -420,6 +453,59 @@ async function handleDateSearch(event) {
 }
 if (!$saveButton) throw new Error('$saveButton not found!');
 $saveButton.addEventListener('click', saveDate);
+function sortData() {
+  data.holidays.sort((a, b) => {
+    if (a.favorite === true && b.favorite === false) {
+      return -1;
+    } else if (a.favorite === false && b.favorite === true) {
+      return 1;
+    } else {
+      if (!a.date || !b.date) {
+        return 0;
+      }
+      return a.date > b.date ? 1 : -1;
+    }
+  });
+}
+function removeHolidayFromDomAtPosition(pos) {
+  if (!$openDialogContent) throw new Error('$openDialogContent not found!');
+  $openDialogContent.removeChild($openDialogContent.children[pos]);
+}
+function createDomRepresentationOfSavedHolidayAndAddItAtPosition(
+  pos,
+  holidayToAdd,
+) {
+  const container = document.createElement('div');
+  container.className = `relative flex flex-col flex-wrap gap-2 w-64
+    lg:w-[24rem] items-center bg-white rounded-[3rem]`;
+  container.dataset.favorite = holidayToAdd.favorite ? 'y' : 'n';
+  container.dataset.date = holidayToAdd.date;
+  container.dataset.imgRef = holidayToAdd.imageReference;
+  container.dataset.name = holidayToAdd.name;
+  container.dataset.description = holidayToAdd.desc;
+  const img = document.createElement('img');
+  img.src = `../../images/celebrations/${holidayToAdd.imageReference}.png`;
+  img.className = `w-44 h-44 lg:w-60 lg:h-60`;
+  container.appendChild(img);
+  const trash = document.createElement('i');
+  trash.className = `absolute bottom-0 right-0 fa-solid fa-trash text-4xl`;
+  container.appendChild(trash);
+  const star = document.createElement('i');
+  holidayToAdd.favorite
+    ? (star.className = `absolute top-1 left-[3rem] lg:left-[4.75rem] fa-solid fa-star text-2xl text-amber-400`)
+    : (star.className = `absolute top-1 left-[3rem] lg:left-[4.75rem] fa-regular fa-star text-2xl text-amber-400`);
+  container.appendChild(star);
+  const h2 = document.createElement('h2');
+  h2.className = `text-2xl lg:text-5xl font-semibold font-[Calligraffitti]
+    w-full text-center`;
+  h2.textContent = holidayToAdd.name;
+  container.appendChild(h2);
+  const p = document.createElement('p');
+  p.className = `text-base lg:text-3xl`;
+  p.textContent = holidayToAdd.date;
+  container.appendChild(p);
+  $openDialogContent.insertBefore(container, $openDialogContent.children[pos]);
+}
 function saveDate() {
   if (!$savePopUp) throw new Error('$savePopUp not found!');
   if (!$holidayName) throw new Error('$holidayName not found!');
@@ -439,12 +525,17 @@ function saveDate() {
     'opacity-100',
   );
   setTimeout(() => $savePopUp.classList.remove('opacity-100'), 1000);
+  const stringMonth =
+    currentMonth + 1 >= 10
+      ? String(currentMonth + 1)
+      : '0' + (currentMonth + 1);
+  const stringDay = currentDay >= 10 ? String(currentDay) : '0' + currentDay;
   const holidayToAdd = {
     name: $holidayName.textContent,
     desc: $holidayDesc.textContent,
     favorite: $favorite.dataset.favorite === 'y',
     imageReference: currentCelebration,
-    date: `${currentMonth + 1}/${currentDay + 1}/${currentYear + 1}`,
+    date: `${stringMonth}/${stringDay}/${currentYear}`,
   };
   if (
     !data.holidays.some(
@@ -452,6 +543,12 @@ function saveDate() {
     )
   ) {
     data.holidays.push(holidayToAdd);
+    sortData();
+    const pos = data.holidays.findIndex((element) => element === holidayToAdd);
+    createDomRepresentationOfSavedHolidayAndAddItAtPosition(
+      pos + 1,
+      holidayToAdd,
+    );
     storeData();
   } else {
     for (let i = 0; i < data.holidays.length; i++) {
@@ -460,12 +557,21 @@ function saveDate() {
         data.holidays[i].date === holidayToAdd.date &&
         data.holidays[i].favorite !== holidayToAdd.favorite
       ) {
+        removeHolidayFromDomAtPosition(i + 1);
         data.holidays.splice(i, 1);
+        data.holidays.push(holidayToAdd);
+        sortData();
+        const pos = data.holidays.findIndex(
+          (element) => element === holidayToAdd,
+        );
+        createDomRepresentationOfSavedHolidayAndAddItAtPosition(
+          pos + 1,
+          holidayToAdd,
+        );
+        storeData();
         break;
       }
     }
-    data.holidays.push(holidayToAdd);
-    storeData();
   }
 }
 if (!$favorite) throw new Error('$favorite not found!');
@@ -484,3 +590,139 @@ function favoriteDate() {
     saveDate();
   }
 }
+if (!$openButton) throw new Error('$openButton not found!');
+$openButton.addEventListener('click', openHolidays);
+function toggleSavedHolidayPlaceholder() {
+  if (!$savedHolidayPlaceholder)
+    throw new Error('$savedHolidayPlaceholder not found!');
+  if (!$openDialogContent) throw new Error('$openDialogContent not found!');
+  $openDialogContent.children.length > 0
+    ? $savedHolidayPlaceholder.classList.add('hidden')
+    : $savedHolidayPlaceholder.classList.remove('hidden');
+}
+function fillOpenDialog(savedHolidaysArray) {
+  if (!$openDialogContent) throw new Error('$openDialogContent not found!');
+  toggleSavedHolidayPlaceholder();
+  for (let i = 0; i < savedHolidaysArray.length; i++) {
+    const container = document.createElement('div');
+    container.className = `relative flex flex-col flex-wrap gap-2 w-64
+    lg:w-[24rem] items-center bg-white rounded-[3rem]`;
+    container.dataset.favorite = savedHolidaysArray[i].favorite ? 'y' : 'n';
+    container.dataset.date = savedHolidaysArray[i].date;
+    container.dataset.imgRef = savedHolidaysArray[i].imageReference;
+    container.dataset.name = savedHolidaysArray[i].name;
+    container.dataset.description = savedHolidaysArray[i].desc;
+    const img = document.createElement('img');
+    img.src = `../../images/celebrations/${savedHolidaysArray[i].imageReference}.png`;
+    img.className = `w-44 h-44 lg:w-60 lg:h-60`;
+    container.appendChild(img);
+    const trash = document.createElement('i');
+    trash.className = `absolute bottom-0 right-0 fa-solid fa-trash text-4xl`;
+    container.appendChild(trash);
+    const star = document.createElement('i');
+    savedHolidaysArray[i].favorite
+      ? (star.className = `absolute top-1 left-[3rem] lg:left-[4.75rem] fa-solid fa-star text-2xl text-amber-400`)
+      : (star.className = `absolute top-1 left-[3rem] lg:left-[4.75rem] fa-regular fa-star text-2xl text-amber-400`);
+    container.appendChild(star);
+    const h2 = document.createElement('h2');
+    h2.className = `text-2xl lg:text-5xl font-semibold font-[Calligraffitti]
+    w-full text-center`;
+    h2.textContent = savedHolidaysArray[i].name;
+    container.appendChild(h2);
+    const p = document.createElement('p');
+    p.className = `text-base lg:text-3xl`;
+    p.textContent = savedHolidaysArray[i].date;
+    container.appendChild(p);
+    $openDialogContent.appendChild(container);
+  }
+}
+function openHolidays() {
+  if (!$openDialog) throw new Error('$openDialog not found!');
+  $openDialog.showModal();
+}
+if (!$closeOpenDialog) throw new Error('$closeOpenDialog not found!');
+$closeOpenDialog.addEventListener('click', closeHolidays);
+function closeHolidays() {
+  if (!$openDialog) throw new Error('$openDialog not found!');
+  $openDialog.close();
+}
+const savedHolidays = retrieveData();
+fillOpenDialog(savedHolidays.holidays);
+async function handleOpenDialogContentClick(event) {
+  const eventTarget = event.target;
+  if (!eventTarget) throw new Error('eventTarget not found!');
+  if (eventTarget === $openDialogContent) return;
+  if (!eventTarget.classList.contains('fa-trash')) {
+    const holidayToDisplay = eventTarget.closest('div');
+    if (!holidayToDisplay) throw new Error('holidayToDisplay not found');
+    if (!$holidayName) throw new Error('holidayToDisplay not found');
+    if (!$holidayDesc) throw new Error('holidayToDisplay not found');
+    if (!holidayToDisplay.dataset.date)
+      throw new Error('holidayToDisplay.dataset.date not found');
+    $openDialog.close();
+    holidayFound = true;
+    const year = Number(holidayToDisplay.dataset.date.slice(-4));
+    const month = Number(holidayToDisplay.dataset.date.slice(0, 2)) - 1;
+    const day = Number(holidayToDisplay.dataset.date.slice(3, 5));
+    const newDate = new Date(year, month, day);
+    previousDate = currentDate;
+    previousDay = currentDay;
+    previousMonth = currentMonth;
+    currentDate = newDate;
+    currentYear = year;
+    currentMonth = month;
+    currentDay = day;
+    const newTexture1 = await loadTexture(
+      `../../images/days/d${previousDay}.png`,
+    );
+    const newTexture2 = await loadTexture(
+      `../../images/months/m${previousMonth + 1}.png`,
+    );
+    const newTexture3 = await loadTexture(
+      `../../images/days/d${currentDay}.png`,
+    );
+    const newTexture4 = await loadTexture(
+      `../../images/months/m${currentMonth + 1}.png`,
+    );
+    updateTextures(
+      [newTexture1, newTexture2, newTexture3, newTexture4],
+      calGltf,
+    );
+    action.stop();
+    action.time = 0;
+    action.play();
+    await animate(
+      mixer,
+      action,
+      calRenderer,
+      calScene,
+      calCamera,
+      action.getClip().duration,
+    );
+    $holidayName.textContent = String(holidayToDisplay.dataset.name);
+    $favorite.classList.remove('hidden');
+    if (holidayToDisplay.dataset.favorite === 'y') {
+      $favorite.classList.remove('fa-regular');
+      $favorite.classList.add('fa-solid');
+    } else {
+      $favorite.classList.remove('fa-solid');
+      $favorite.classList.add('fa-regular');
+    }
+    $holidayDesc.textContent = String(holidayToDisplay.dataset.description);
+    if (!$noCelebration) throw new Error('$noCelebration not found!');
+    $noCelebration.classList.add('hidden');
+    const celeGltf = await loadGLTF(
+      `../../objects/celebrations/${holidayToDisplay.dataset.imgRef}.glb`,
+    );
+    const celeModel = celeGltf.scene;
+    for (const child of celeScene.children) {
+      if (child.type === 'Group') {
+        celeScene.remove(child);
+      }
+    }
+    celeScene.add(celeModel);
+    celeRenderer.render(celeScene, celeCamera);
+  }
+}
+if (!$openDialogContent) throw new Error('$openDialogContent not found!');
+$openDialogContent.addEventListener('click', handleOpenDialogContentClick);
