@@ -29,6 +29,7 @@ const $dateInputDialog = document.querySelector('#date-input-dialog');
 const $dateInputForm = document.querySelector('#date-input-form');
 const $savePopUp = document.querySelector('#save-pop-up');
 const $openDialog = document.querySelector('#open-dialog');
+const $closeOpenDialog = document.querySelector('#close-open-dialog');
 let mixer;
 let action;
 let calRenderer;
@@ -444,4 +445,12 @@ function openHolidays() {
     if (!$openDialog)
         throw new Error('$openDialog not found!');
     $openDialog.showModal();
+}
+if (!$closeOpenDialog)
+    throw new Error('$closeOpenDialog not found!');
+$closeOpenDialog.addEventListener('click', closeHolidays);
+function closeHolidays() {
+    if (!$openDialog)
+        throw new Error('$openDialog not found!');
+    $openDialog.close();
 }

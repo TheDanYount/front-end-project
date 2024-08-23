@@ -43,6 +43,7 @@ const $dateInputForm = document.querySelector(
 ) as HTMLFormElement;
 const $savePopUp = document.querySelector('#save-pop-up') as HTMLElement;
 const $openDialog = document.querySelector('#open-dialog') as HTMLDialogElement;
+const $closeOpenDialog = document.querySelector('#close-open-dialog');
 
 interface UpdatedPerspectiveCamera extends THREE.PerspectiveCamera {
   position: Vector3;
@@ -600,4 +601,12 @@ $openButton.addEventListener('click', openHolidays);
 function openHolidays(): void {
   if (!$openDialog) throw new Error('$openDialog not found!');
   $openDialog.showModal();
+}
+
+if (!$closeOpenDialog) throw new Error('$closeOpenDialog not found!');
+$closeOpenDialog.addEventListener('click', closeHolidays);
+
+function closeHolidays(): void {
+  if (!$openDialog) throw new Error('$openDialog not found!');
+  $openDialog.close();
 }
