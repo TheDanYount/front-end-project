@@ -395,12 +395,16 @@ function saveDate() {
         throw new Error('$favorite not found!');
     $savePopUp.classList.add('transition-opacity', 'duration-500', 'ease-in-out', 'opacity-100');
     setTimeout(() => $savePopUp.classList.remove('opacity-100'), 1000);
+    const stringMonth = currentMonth + 1 >= 10
+        ? String(currentMonth + 1)
+        : '0' + (currentMonth + 1);
+    const stringDay = currentDay >= 10 ? String(currentDay) : '0' + currentDay;
     const holidayToAdd = {
         name: $holidayName.textContent,
         desc: $holidayDesc.textContent,
         favorite: $favorite.dataset.favorite === 'y',
         imageReference: currentCelebration,
-        date: `${currentMonth + 1}/${currentDay + 1}/${currentYear + 1}`,
+        date: `${stringMonth}/${stringDay}/${currentYear}`,
     };
     if (!data.holidays.some((day) => day.name === holidayToAdd.name && day.date === holidayToAdd.date)) {
         data.holidays.push(holidayToAdd);
@@ -447,13 +451,14 @@ function fillOpenDialog(savedHolidaysArray) {
         const container = document.createElement('div');
         container.className = `relative flex flex-col flex-wrap gap-2 w-64
     lg:w-[24rem] items-center bg-white rounded-[3rem]`;
+        container.dataset.favorite = savedHolidaysArray[i].favorite ? 'y' : 'n';
+        container.dataset.date = savedHolidaysArray[i].date;
         const img = document.createElement('img');
         img.src = `../../images/celebrations/${savedHolidaysArray[i].imageReference}.png`;
         img.className = `w-44 h-44 lg:w-60 lg:h-60`;
         container.appendChild(img);
         const icon = document.createElement('i');
         icon.className = `absolute bottom-0 right-0 fa-solid fa-trash text-4xl`;
-        container.appendChild(icon);
         const h2 = document.createElement('h2');
         h2.className = `text-2xl lg:text-5xl font-semibold font-[Calligraffitti]
     w-full text-center`;
@@ -464,8 +469,21 @@ function fillOpenDialog(savedHolidaysArray) {
         h2.textContent = savedHolidaysArray[i].date;
         container.appendChild(p);
         holidayRepresentationArray.push(container);
-        console.log(holidayRepresentationArray);
     }
+    holidayRepresentationArray.sort((a, b) => {
+        if (a.dataset.favorite === 'y' && b.dataset.favorite === 'n') {
+            return -1;
+        }
+        else if (a.dataset.favorite === 'n' && b.dataset.favorite === 'y') {
+            return 1;
+        }
+        else {
+            if (!a.dataset.date || !b.dataset.date) {
+                return 0;
+            }
+            return a.dataset.date > b.dataset.date ? 1 : -1;
+        }
+    });
 }
 function openHolidays() {
     if (!$openDialog)
