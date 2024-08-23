@@ -30,6 +30,8 @@ const $dateInputForm = document.querySelector('#date-input-form');
 const $savePopUp = document.querySelector('#save-pop-up');
 const $openDialog = document.querySelector('#open-dialog');
 const $closeOpenDialog = document.querySelector('#close-open-dialog');
+const $openDialogContent = document.querySelector('#open-dialog-content');
+const $savedHolidayPlaceholder = document.querySelector('#saved-holiday-placeholder');
 let mixer;
 let action;
 let calRenderer;
@@ -445,7 +447,17 @@ function favoriteDate() {
 if (!$openButton)
     throw new Error('$openButton not found!');
 $openButton.addEventListener('click', openHolidays);
+function toggleSavedHolidayPlaceholder() {
+    if (!$savedHolidayPlaceholder)
+        throw new Error('$savedHolidayPlaceholder not found!');
+    if (!$openDialogContent)
+        throw new Error('$openDialogContent not found!');
+    $openDialogContent.children.length > 0
+        ? $savedHolidayPlaceholder.classList.add('hidden')
+        : $savedHolidayPlaceholder.classList.remove('hidden');
+}
 function fillOpenDialog(savedHolidaysArray) {
+    toggleSavedHolidayPlaceholder();
     const holidayRepresentationArray = [];
     for (let i = 0; i < savedHolidaysArray.length; i++) {
         const container = document.createElement('div');
@@ -466,7 +478,7 @@ function fillOpenDialog(savedHolidaysArray) {
         container.appendChild(h2);
         const p = document.createElement('p');
         p.className = `text-base lg:text-3xl`;
-        h2.textContent = savedHolidaysArray[i].date;
+        p.textContent = savedHolidaysArray[i].date;
         container.appendChild(p);
         holidayRepresentationArray.push(container);
     }
@@ -484,13 +496,16 @@ function fillOpenDialog(savedHolidaysArray) {
             return a.dataset.date > b.dataset.date ? 1 : -1;
         }
     });
+    if (!$openDialogContent)
+        throw new Error('$openDialogContent not found!');
+    for (const holidayRepresentation of holidayRepresentationArray) {
+        $openDialogContent.appendChild(holidayRepresentation);
+    }
 }
 function openHolidays() {
     if (!$openDialog)
         throw new Error('$openDialog not found!');
     $openDialog.showModal();
-    const savedHolidays = retrieveData();
-    fillOpenDialog(savedHolidays.holidays);
 }
 if (!$closeOpenDialog)
     throw new Error('$closeOpenDialog not found!');
@@ -500,3 +515,5 @@ function closeHolidays() {
         throw new Error('$openDialog not found!');
     $openDialog.close();
 }
+const savedHolidays = retrieveData();
+fillOpenDialog(savedHolidays.holidays);
