@@ -23,6 +23,7 @@ let previousDay = previousDate.getDate();
 let holidayFound = false;
 const celebrations = ['family-celebration'];
 let currentCelebration: string;
+let holidayToDelete: HTMLElement | null;
 
 const $calCanvas = document.querySelector('#calendar-canvas');
 const $celeCanvas = document.querySelector('#celebration-canvas');
@@ -53,7 +54,7 @@ const $savedHolidayPlaceholder = document.querySelector(
 const $deleteConfirmationDialog = document.querySelector(
   '#delete-confirmation-dialog',
 ) as HTMLDialogElement;
-let holidayToDelete: HTMLElement;
+const $deleteConfirm = document.querySelector('#delete-confirm');
 
 interface UpdatedPerspectiveCamera extends THREE.PerspectiveCamera {
   position: Vector3;
@@ -658,6 +659,7 @@ function saveDate(): void {
       holidayToAdd,
     );
     storeData();
+    toggleSavedHolidayPlaceholder();
   } else {
     for (let i = 0; i < data.holidays.length; i++) {
       if (
@@ -677,6 +679,7 @@ function saveDate(): void {
           holidayToAdd,
         );
         storeData();
+        toggleSavedHolidayPlaceholder();
         break;
       }
     }
@@ -708,9 +711,11 @@ function toggleSavedHolidayPlaceholder(): void {
   if (!$savedHolidayPlaceholder)
     throw new Error('$savedHolidayPlaceholder not found!');
   if (!$openDialogContent) throw new Error('$openDialogContent not found!');
-  $openDialogContent.children.length > 0
-    ? $savedHolidayPlaceholder.classList.add('hidden')
-    : $savedHolidayPlaceholder.classList.remove('hidden');
+  if ($openDialogContent.children.length > 1) {
+    $savedHolidayPlaceholder.classList.add('hidden');
+  } else {
+    $savedHolidayPlaceholder.classList.remove('hidden');
+  }
 }
 
 function fillOpenDialog(savedHolidaysArray: SavedHoliday[]): void {
@@ -852,3 +857,27 @@ async function handleOpenDialogContentClick(event: Event): Promise<void> {
 
 if (!$openDialogContent) throw new Error('$openDialogContent not found!');
 $openDialogContent.addEventListener('click', handleOpenDialogContentClick);
+
+function deleteHoliday(): void {
+  $deleteConfirmationDialog.close();
+  if (holidayToDelete) {
+    $openDialogContent.removeChild(holidayToDelete);
+    const pos = data.holidays.findIndex((element) => {
+      if (
+        holidayToDelete?.dataset.name === element.name &&
+        holidayToDelete?.dataset.date === element.date
+      ) {
+        return true;
+      } else {
+        return false;
+      }
+    });
+    data.holidays.splice(pos, 1);
+    storeData();
+    toggleSavedHolidayPlaceholder();
+    holidayToDelete = null;
+  }
+}
+
+if (!$deleteConfirm) throw new Error('$deleteConfirm not found!');
+$deleteConfirm.addEventListener('click', deleteHoliday);
