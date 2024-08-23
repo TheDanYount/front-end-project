@@ -534,6 +534,59 @@ async function handleDateSearch(event: Event): Promise<void> {
 if (!$saveButton) throw new Error('$saveButton not found!');
 $saveButton.addEventListener('click', saveDate);
 
+function sortData(): void {
+  data.holidays.sort((a, b) => {
+    if (a.favorite === true && b.favorite === false) {
+      return -1;
+    } else if (a.favorite === false && b.favorite === true) {
+      return 1;
+    } else {
+      if (!a.date || !b.date) {
+        return 0;
+      }
+      return a.date > b.date ? 1 : -1;
+    }
+  });
+}
+
+function removeHolidayFromDomAtPosition(pos: number): void {
+  if (!$openDialogContent) throw new Error('$openDialogContent not found!');
+  $openDialogContent.removeChild($openDialogContent.children[pos]);
+}
+
+function createDomRepresentationOfSavedHolidayAndAddItAtPosition(
+  pos: number,
+  holidayToAdd: SavedHoliday,
+): void {
+  const container = document.createElement('div');
+  container.className = `relative flex flex-col flex-wrap gap-2 w-64
+    lg:w-[24rem] items-center bg-white rounded-[3rem]`;
+  container.dataset.favorite = holidayToAdd.favorite ? 'y' : 'n';
+  container.dataset.date = holidayToAdd.date;
+  const img = document.createElement('img');
+  img.src = `../../images/celebrations/${holidayToAdd.imageReference}.png`;
+  img.className = `w-44 h-44 lg:w-60 lg:h-60`;
+  container.appendChild(img);
+  const trash = document.createElement('i');
+  trash.className = `absolute bottom-0 right-0 fa-solid fa-trash text-4xl`;
+  container.appendChild(trash);
+  const star = document.createElement('i');
+  holidayToAdd.favorite
+    ? (star.className = `absolute top-1 left-[3rem] lg:left-[4.75rem] fa-solid fa-star text-2xl text-amber-400`)
+    : (star.className = `absolute top-1 left-[3rem] lg:left-[4.75rem] fa-regular fa-star text-2xl text-amber-400`);
+  container.appendChild(star);
+  const h2 = document.createElement('h2');
+  h2.className = `text-2xl lg:text-5xl font-semibold font-[Calligraffitti]
+    w-full text-center`;
+  h2.textContent = holidayToAdd.name;
+  container.appendChild(h2);
+  const p = document.createElement('p');
+  p.className = `text-base lg:text-3xl`;
+  p.textContent = holidayToAdd.date;
+  container.appendChild(p);
+  $openDialogContent.insertBefore(container, $openDialogContent.children[pos]);
+}
+
 function saveDate(): void {
   if (!$savePopUp) throw new Error('$savePopUp not found!');
   if (!$holidayName) throw new Error('$holidayName not found!');
@@ -571,6 +624,12 @@ function saveDate(): void {
     )
   ) {
     data.holidays.push(holidayToAdd);
+    sortData();
+    const pos = data.holidays.findIndex((element) => element === holidayToAdd);
+    createDomRepresentationOfSavedHolidayAndAddItAtPosition(
+      pos + 1,
+      holidayToAdd,
+    );
     storeData();
   } else {
     for (let i = 0; i < data.holidays.length; i++) {
@@ -579,8 +638,17 @@ function saveDate(): void {
         data.holidays[i].date === holidayToAdd.date &&
         data.holidays[i].favorite !== holidayToAdd.favorite
       ) {
+        removeHolidayFromDomAtPosition(i + 1);
         data.holidays.splice(i, 1);
         data.holidays.push(holidayToAdd);
+        sortData();
+        const pos = data.holidays.findIndex(
+          (element) => element === holidayToAdd,
+        );
+        createDomRepresentationOfSavedHolidayAndAddItAtPosition(
+          pos + 1,
+          holidayToAdd,
+        );
         storeData();
         break;
       }
@@ -619,8 +687,8 @@ function toggleSavedHolidayPlaceholder(): void {
 }
 
 function fillOpenDialog(savedHolidaysArray: SavedHoliday[]): void {
+  if (!$openDialogContent) throw new Error('$openDialogContent not found!');
   toggleSavedHolidayPlaceholder();
-  const holidayRepresentationArray: HTMLElement[] = [];
   for (let i = 0; i < savedHolidaysArray.length; i++) {
     const container = document.createElement('div');
     container.className = `relative flex flex-col flex-wrap gap-2 w-64
@@ -631,8 +699,14 @@ function fillOpenDialog(savedHolidaysArray: SavedHoliday[]): void {
     img.src = `../../images/celebrations/${savedHolidaysArray[i].imageReference}.png`;
     img.className = `w-44 h-44 lg:w-60 lg:h-60`;
     container.appendChild(img);
-    const icon = document.createElement('i');
-    icon.className = `absolute bottom-0 right-0 fa-solid fa-trash text-4xl`;
+    const trash = document.createElement('i');
+    trash.className = `absolute bottom-0 right-0 fa-solid fa-trash text-4xl`;
+    container.appendChild(trash);
+    const star = document.createElement('i');
+    savedHolidaysArray[i].favorite
+      ? (star.className = `absolute top-1 left-[3rem] lg:left-[4.75rem] fa-solid fa-star text-2xl text-amber-400`)
+      : (star.className = `absolute top-1 left-[3rem] lg:left-[4.75rem] fa-regular fa-star text-2xl text-amber-400`);
+    container.appendChild(star);
     const h2 = document.createElement('h2');
     h2.className = `text-2xl lg:text-5xl font-semibold font-[Calligraffitti]
     w-full text-center`;
@@ -642,23 +716,7 @@ function fillOpenDialog(savedHolidaysArray: SavedHoliday[]): void {
     p.className = `text-base lg:text-3xl`;
     p.textContent = savedHolidaysArray[i].date;
     container.appendChild(p);
-    holidayRepresentationArray.push(container);
-  }
-  holidayRepresentationArray.sort((a, b) => {
-    if (a.dataset.favorite === 'y' && b.dataset.favorite === 'n') {
-      return -1;
-    } else if (a.dataset.favorite === 'n' && b.dataset.favorite === 'y') {
-      return 1;
-    } else {
-      if (!a.dataset.date || !b.dataset.date) {
-        return 0;
-      }
-      return a.dataset.date > b.dataset.date ? 1 : -1;
-    }
-  });
-  if (!$openDialogContent) throw new Error('$openDialogContent not found!');
-  for (const holidayRepresentation of holidayRepresentationArray) {
-    $openDialogContent.appendChild(holidayRepresentation);
+    $openDialogContent.appendChild(container);
   }
 }
 
