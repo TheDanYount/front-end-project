@@ -735,3 +735,57 @@ function closeHolidays(): void {
 
 const savedHolidays = retrieveData();
 fillOpenDialog(savedHolidays.holidays);
+
+async function handleOpenDialogContentClick(event: Event): Promise<void> {
+  const eventTarget = event.target as HTMLElement;
+  if (!eventTarget) throw new Error('eventTarget not found!');
+  if (eventTarget === $openDialogContent) return;
+  if (!eventTarget.classList.contains('fa-trash')) {
+    const holidayToDisplay = eventTarget.closest('div');
+    if (!holidayToDisplay) throw new Error('holidayToDisplay not found');
+    if (!holidayToDisplay.dataset.date)
+      throw new Error('holidayToDisplay.dataset.date not found');
+    $openDialog.close();
+    const year = Number(holidayToDisplay.dataset.date.slice(-4));
+    const month = Number(holidayToDisplay.dataset.date.slice(0, 2)) - 1;
+    const day = Number(holidayToDisplay.dataset.date.slice(3, 5));
+    const newDate = new Date(year, month, day);
+    previousDate = currentDate;
+    previousDay = currentDay;
+    previousMonth = currentMonth;
+    currentDate = newDate;
+    currentYear = year;
+    currentMonth = month;
+    currentDay = day;
+    const newTexture1 = await loadTexture(
+      `../../images/days/d${previousDay}.png`,
+    );
+    const newTexture2 = await loadTexture(
+      `../../images/months/m${previousMonth + 1}.png`,
+    );
+    const newTexture3 = await loadTexture(
+      `../../images/days/d${currentDay}.png`,
+    );
+    const newTexture4 = await loadTexture(
+      `../../images/months/m${currentMonth + 1}.png`,
+    );
+    updateTextures(
+      [newTexture1, newTexture2, newTexture3, newTexture4],
+      calGltf,
+    );
+    action.stop();
+    action.time = 0;
+    action.play();
+    await animate(
+      mixer,
+      action,
+      calRenderer,
+      calScene,
+      calCamera,
+      action.getClip().duration,
+    );
+  }
+}
+
+if (!$openDialogContent) throw new Error('$openDialogContent not found!');
+$openDialogContent.addEventListener('click', handleOpenDialogContentClick);
