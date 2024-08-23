@@ -24,9 +24,11 @@ const $textSection = document.querySelector('#text-section');
 const $noCelebration = document.querySelector('#no-celebration');
 const $newButton = document.querySelector('#new');
 const $saveButton = document.querySelector('#save');
+const $openButton = document.querySelector('#open');
 const $dateInputDialog = document.querySelector('#date-input-dialog');
 const $dateInputForm = document.querySelector('#date-input-form');
 const $savePopUp = document.querySelector('#save-pop-up');
+const $openDialog = document.querySelector('#open-dialog');
 let mixer;
 let action;
 let calRenderer;
@@ -434,4 +436,12 @@ function favoriteDate() {
         $favorite.classList.add('fa-regular');
         saveDate();
     }
+}
+if (!$openButton)
+    throw new Error('$openButton not found!');
+$openButton.addEventListener('click', openHolidays);
+function openHolidays() {
+    if (!$openDialog)
+        throw new Error('$openDialog not found!');
+    $openDialog.showModal();
 }

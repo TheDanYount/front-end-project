@@ -34,6 +34,7 @@ const $textSection = document.querySelector('#text-section');
 const $noCelebration = document.querySelector('#no-celebration');
 const $newButton = document.querySelector('#new');
 const $saveButton = document.querySelector('#save');
+const $openButton = document.querySelector('#open');
 const $dateInputDialog = document.querySelector(
   '#date-input-dialog',
 ) as HTMLDialogElement;
@@ -41,6 +42,7 @@ const $dateInputForm = document.querySelector(
   '#date-input-form',
 ) as HTMLFormElement;
 const $savePopUp = document.querySelector('#save-pop-up') as HTMLElement;
+const $openDialog = document.querySelector('#open-dialog') as HTMLDialogElement;
 
 interface UpdatedPerspectiveCamera extends THREE.PerspectiveCamera {
   position: Vector3;
@@ -590,4 +592,12 @@ function favoriteDate(): void {
     $favorite.classList.add('fa-regular');
     saveDate();
   }
+}
+
+if (!$openButton) throw new Error('$openButton not found!');
+$openButton.addEventListener('click', openHolidays);
+
+function openHolidays(): void {
+  if (!$openDialog) throw new Error('$openDialog not found!');
+  $openDialog.showModal();
 }
