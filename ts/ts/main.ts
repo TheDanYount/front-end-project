@@ -213,6 +213,32 @@ async function getHoliday(): Promise<void> {
         $holidayName.textContent = chosenHoliday.name;
         $favorite.classList.remove('hidden');
         $holidayDesc.textContent = chosenHoliday.description;
+        const stringMonth =
+          currentMonth + 1 >= 10
+            ? String(currentMonth + 1)
+            : '0' + (currentMonth + 1);
+        const stringDay =
+          currentDay >= 10 ? String(currentDay) : '0' + currentDay;
+        const stringDate = `${stringMonth}/${stringDay}/${currentYear}`;
+        const match = data.holidays.find((holiday) => {
+          if (
+            chosenHoliday.name === holiday.name &&
+            stringDate === holiday.date
+          ) {
+            return true;
+          } else {
+            return false;
+          }
+        });
+        if (match) {
+          if (match.favorite) {
+            $favorite.classList.remove('fa-regular');
+            $favorite.classList.add('fa-solid');
+          } else {
+            $favorite.classList.remove('fa-solid');
+            $favorite.classList.add('fa-regular');
+          }
+        }
       }
     } else {
       for (const child of celeScene.children) {
@@ -789,6 +815,13 @@ async function handleOpenDialogContentClick(event: Event): Promise<void> {
     );
     $holidayName.textContent = String(holidayToDisplay.dataset.name);
     $favorite.classList.remove('hidden');
+    if (holidayToDisplay.dataset.favorite === 'y') {
+      $favorite.classList.remove('fa-regular');
+      $favorite.classList.add('fa-solid');
+    } else {
+      $favorite.classList.remove('fa-solid');
+      $favorite.classList.add('fa-regular');
+    }
     $holidayDesc.textContent = String(holidayToDisplay.dataset.description);
     if (!$noCelebration) throw new Error('$noCelebration not found!');
     $noCelebration.classList.add('hidden');
