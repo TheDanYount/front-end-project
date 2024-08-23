@@ -39,6 +39,7 @@ const $deleteConfirmationDialog = document.querySelector(
   '#delete-confirmation-dialog',
 );
 const $deleteConfirm = document.querySelector('#delete-confirm');
+const $deleteCancel = document.querySelector('#delete-cancel');
 let mixer;
 let action;
 let calRenderer;
@@ -764,3 +765,9 @@ function deleteHoliday() {
 }
 if (!$deleteConfirm) throw new Error('$deleteConfirm not found!');
 $deleteConfirm.addEventListener('click', deleteHoliday);
+function deleteCancel() {
+  $deleteConfirmationDialog.close();
+  holidayToDelete = null;
+}
+if (!$deleteCancel) throw new Error('$deleteCancel not found!');
+$deleteCancel.addEventListener('click', deleteCancel);

@@ -55,6 +55,7 @@ const $deleteConfirmationDialog = document.querySelector(
   '#delete-confirmation-dialog',
 ) as HTMLDialogElement;
 const $deleteConfirm = document.querySelector('#delete-confirm');
+const $deleteCancel = document.querySelector('#delete-cancel');
 
 interface UpdatedPerspectiveCamera extends THREE.PerspectiveCamera {
   position: Vector3;
@@ -881,3 +882,11 @@ function deleteHoliday(): void {
 
 if (!$deleteConfirm) throw new Error('$deleteConfirm not found!');
 $deleteConfirm.addEventListener('click', deleteHoliday);
+
+function deleteCancel(): void {
+  $deleteConfirmationDialog.close();
+  holidayToDelete = null;
+}
+
+if (!$deleteCancel) throw new Error('$deleteCancel not found!');
+$deleteCancel.addEventListener('click', deleteCancel);
