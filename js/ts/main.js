@@ -603,8 +603,7 @@ $openButton.addEventListener('click', openHolidays);
 function toggleSavedHolidayPlaceholder() {
   if (!$savedHolidayPlaceholder)
     throw new Error('$savedHolidayPlaceholder not found!');
-  if (!$openDialogContent) throw new Error('$openDialogContent not found!');
-  if ($openDialogContent.children.length > 1) {
+  if (data.holidays.length > 0) {
     $savedHolidayPlaceholder.classList.add('hidden');
   } else {
     $savedHolidayPlaceholder.classList.remove('hidden');
