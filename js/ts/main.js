@@ -412,11 +412,11 @@ function saveDate() {
                 data.holidays[i].date === holidayToAdd.date &&
                 data.holidays[i].favorite !== holidayToAdd.favorite) {
                 data.holidays.splice(i, 1);
+                data.holidays.push(holidayToAdd);
+                storeData();
                 break;
             }
         }
-        data.holidays.push(holidayToAdd);
-        storeData();
     }
 }
 if (!$favorite)
@@ -441,10 +441,38 @@ function favoriteDate() {
 if (!$openButton)
     throw new Error('$openButton not found!');
 $openButton.addEventListener('click', openHolidays);
+function fillOpenDialog(savedHolidaysArray) {
+    const holidayRepresentationArray = [];
+    for (let i = 0; i < savedHolidaysArray.length; i++) {
+        const container = document.createElement('div');
+        container.className = `relative flex flex-col flex-wrap gap-2 w-64
+    lg:w-[24rem] items-center bg-white rounded-[3rem]`;
+        const img = document.createElement('img');
+        img.src = `../../images/celebrations/${savedHolidaysArray[i].imageReference}.png`;
+        img.className = `w-44 h-44 lg:w-60 lg:h-60`;
+        container.appendChild(img);
+        const icon = document.createElement('i');
+        icon.className = `absolute bottom-0 right-0 fa-solid fa-trash text-4xl`;
+        container.appendChild(icon);
+        const h2 = document.createElement('h2');
+        h2.className = `text-2xl lg:text-5xl font-semibold font-[Calligraffitti]
+    w-full text-center`;
+        h2.textContent = savedHolidaysArray[i].name;
+        container.appendChild(h2);
+        const p = document.createElement('p');
+        p.className = `text-base lg:text-3xl`;
+        h2.textContent = savedHolidaysArray[i].date;
+        container.appendChild(p);
+        holidayRepresentationArray.push(container);
+        console.log(holidayRepresentationArray);
+    }
+}
 function openHolidays() {
     if (!$openDialog)
         throw new Error('$openDialog not found!');
     $openDialog.showModal();
+    const savedHolidays = retrieveData();
+    fillOpenDialog(savedHolidays.holidays);
 }
 if (!$closeOpenDialog)
     throw new Error('$closeOpenDialog not found!');
