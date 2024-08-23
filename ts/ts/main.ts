@@ -50,6 +50,10 @@ const $openDialogContent = document.querySelector(
 const $savedHolidayPlaceholder = document.querySelector(
   '#saved-holiday-placeholder',
 );
+const $deleteConfirmationDialog = document.querySelector(
+  '#delete-confirmation-dialog',
+) as HTMLDialogElement;
+let holidayToDelete: HTMLElement;
 
 interface UpdatedPerspectiveCamera extends THREE.PerspectiveCamera {
   position: Vector3;
@@ -836,6 +840,13 @@ async function handleOpenDialogContentClick(event: Event): Promise<void> {
     }
     celeScene.add(celeModel);
     celeRenderer.render(celeScene, celeCamera);
+  } else {
+    const container = eventTarget.closest('div');
+    if (!container) throw new Error('container not found!');
+    holidayToDelete = container;
+    if (!$deleteConfirmationDialog)
+      throw new Error('$deleteConfirmationDialog not found!');
+    $deleteConfirmationDialog.showModal();
   }
 }
 
