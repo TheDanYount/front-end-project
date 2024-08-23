@@ -185,7 +185,6 @@ async function getHoliday(): Promise<void> {
   };
 
   try {
-    /*
     const holidaysPromiseResponse = await fetch(
       `https://calendarific.com/api/v2/holidays?api_key=${params.api_key}&country=${params.country}&year=${params.year}&month=${params.month}&day=${params.day}`,
     );
@@ -228,11 +227,6 @@ async function getHoliday(): Promise<void> {
       currentCelebration = '';
       holidayFound = false;
     }
-    */
-    holidayFound = true;
-    $holidayName.textContent = 'Blah';
-    $favorite.classList.remove('hidden');
-    $holidayDesc.textContent = 'blah blah blah';
   } catch (error) {
     for (const child of celeScene.children) {
       if (child.type === 'Group') {
@@ -563,6 +557,9 @@ function createDomRepresentationOfSavedHolidayAndAddItAtPosition(
     lg:w-[24rem] items-center bg-white rounded-[3rem]`;
   container.dataset.favorite = holidayToAdd.favorite ? 'y' : 'n';
   container.dataset.date = holidayToAdd.date;
+  container.dataset.imgRef = holidayToAdd.imageReference;
+  container.dataset.name = holidayToAdd.name;
+  container.dataset.description = holidayToAdd.desc;
   const img = document.createElement('img');
   img.src = `../../images/celebrations/${holidayToAdd.imageReference}.png`;
   img.className = `w-44 h-44 lg:w-60 lg:h-60`;
@@ -695,6 +692,9 @@ function fillOpenDialog(savedHolidaysArray: SavedHoliday[]): void {
     lg:w-[24rem] items-center bg-white rounded-[3rem]`;
     container.dataset.favorite = savedHolidaysArray[i].favorite ? 'y' : 'n';
     container.dataset.date = savedHolidaysArray[i].date;
+    container.dataset.imgRef = savedHolidaysArray[i].imageReference;
+    container.dataset.name = savedHolidaysArray[i].name;
+    container.dataset.description = savedHolidaysArray[i].desc;
     const img = document.createElement('img');
     img.src = `../../images/celebrations/${savedHolidaysArray[i].imageReference}.png`;
     img.className = `w-44 h-44 lg:w-60 lg:h-60`;
@@ -743,9 +743,12 @@ async function handleOpenDialogContentClick(event: Event): Promise<void> {
   if (!eventTarget.classList.contains('fa-trash')) {
     const holidayToDisplay = eventTarget.closest('div');
     if (!holidayToDisplay) throw new Error('holidayToDisplay not found');
+    if (!$holidayName) throw new Error('holidayToDisplay not found');
+    if (!$holidayDesc) throw new Error('holidayToDisplay not found');
     if (!holidayToDisplay.dataset.date)
       throw new Error('holidayToDisplay.dataset.date not found');
     $openDialog.close();
+    holidayFound = true;
     const year = Number(holidayToDisplay.dataset.date.slice(-4));
     const month = Number(holidayToDisplay.dataset.date.slice(0, 2)) - 1;
     const day = Number(holidayToDisplay.dataset.date.slice(3, 5));
@@ -784,6 +787,22 @@ async function handleOpenDialogContentClick(event: Event): Promise<void> {
       calCamera,
       action.getClip().duration,
     );
+    $holidayName.textContent = String(holidayToDisplay.dataset.name);
+    $favorite.classList.remove('hidden');
+    $holidayDesc.textContent = String(holidayToDisplay.dataset.description);
+    if (!$noCelebration) throw new Error('$noCelebration not found!');
+    $noCelebration.classList.add('hidden');
+    const celeGltf = await loadGLTF(
+      `../../objects/celebrations/${holidayToDisplay.dataset.imgRef}.glb`,
+    );
+    const celeModel = celeGltf.scene;
+    for (const child of celeScene.children) {
+      if (child.type === 'Group') {
+        celeScene.remove(child);
+      }
+    }
+    celeScene.add(celeModel);
+    celeRenderer.render(celeScene, celeCamera);
   }
 }
 
