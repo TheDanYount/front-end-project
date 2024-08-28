@@ -31,7 +31,6 @@ const $sidebar = document.querySelector('#sidebar');
 const $holidayName = document.querySelector('#holiday-name');
 const $holidayDesc = document.querySelector('#holiday-desc');
 const $favorite = document.querySelector('#favorite') as HTMLElement;
-const $textSection = document.querySelector('#text-section');
 const $noCelebration = document.querySelector('#no-celebration');
 const $newButton = document.querySelector('#new');
 const $saveButton = document.querySelector('#save');
@@ -113,17 +112,6 @@ function updateRendererSizeRSS(renderer: WebGLRenderer): void {
   }
 }
 
-function updateHTMLElementSizes(): void {
-  if (!$textSection) throw new Error('$textSection not found!');
-  const innerW = window.innerWidth;
-  const innerH = window.innerHeight;
-  if (innerW < breakpointForLarge) {
-    $textSection.classList.add(`min-h-[${innerH - innerW}px]`);
-  } else {
-    $textSection.classList.add(`min-h-[${innerH / 3}px]`);
-  }
-}
-
 async function loadGLTF(url: string): Promise<GLTF> {
   const loader = new GLTFLoader();
   return new Promise((resolve, reject) => {
@@ -191,6 +179,7 @@ async function getHoliday(): Promise<void> {
   };
 
   try {
+    /*
     const holidaysPromiseResponse = await fetch(
       `https://calendarific.com/api/v2/holidays?api_key=${params.api_key}&country=${params.country}&year=${params.year}&month=${params.month}&day=${params.day}`,
     );
@@ -259,6 +248,10 @@ async function getHoliday(): Promise<void> {
       currentCelebration = '';
       holidayFound = false;
     }
+    */
+    $holidayName.textContent = `${currentDay}th of ${currentMonth + 1}`;
+    $favorite.classList.remove('hidden');
+    $holidayDesc.textContent = `A holiday on the ${currentDay}th of ${currentMonth + 1}`;
   } catch (error) {
     for (const child of celeScene.children) {
       if (child.type === 'Group') {
@@ -352,7 +345,6 @@ async function createCalendarScene(): Promise<void> {
   } else {
     $sidebar.classList.add('top-[calc(200vw/3-80px)]');
   }
-  updateHTMLElementSizes();
   calCamera = new THREE.PerspectiveCamera(
     75,
     1,
