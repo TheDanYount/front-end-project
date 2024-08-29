@@ -840,8 +840,21 @@ $openDialogContent.addEventListener('click', handleOpenDialogContentClick);
 
 function deleteHoliday(): void {
   $deleteConfirmationDialog.close();
+  if (!$holidayName) throw new Error('$holidayName not found!');
   if (holidayToDelete) {
-    $openDialogContent.removeChild(holidayToDelete);
+    const stringMonth =
+      currentMonth + 1 >= 10
+        ? String(currentMonth + 1)
+        : '0' + (currentMonth + 1);
+    const stringDay = currentDay >= 10 ? String(currentDay) : '0' + currentDay;
+    const stringDate = `${stringMonth}/${stringDay}/${currentYear}`;
+    if (
+      holidayToDelete.dataset.name === $holidayName.textContent &&
+      holidayToDelete.dataset.date === stringDate
+    ) {
+      $favorite.classList.remove('fa-solid');
+      $favorite.classList.add('fa-regular');
+    }
     const pos = data.holidays.findIndex((element) => {
       if (
         holidayToDelete?.dataset.name === element.name &&
@@ -852,6 +865,7 @@ function deleteHoliday(): void {
         return false;
       }
     });
+    $openDialogContent.removeChild(holidayToDelete);
     data.holidays.splice(pos, 1);
     storeData();
     toggleSavedHolidayPlaceholder();
