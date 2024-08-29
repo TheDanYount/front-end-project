@@ -11,20 +11,19 @@ let previousDate = new Date();
 previousDate.setDate(previousDate.getDate() - 1);
 let previousMonth = previousDate.getMonth();
 let previousDay = previousDate.getDate();
-let holidayFound = false;
 const celebrations = ['family-celebration'];
 let currentCelebration;
 let holidayToDelete;
 const $calCanvas = document.querySelector('#calendar-canvas');
 const $celeCanvas = document.querySelector('#celebration-canvas');
-const $sidebar = document.querySelector('#sidebar');
 const $holidayName = document.querySelector('#holiday-name');
 const $holidayDesc = document.querySelector('#holiday-desc');
 const $favorite = document.querySelector('#favorite');
 const $noCelebration = document.querySelector('#no-celebration');
-const $newButton = document.querySelector('#new');
-const $saveButton = document.querySelector('#save');
-const $openButton = document.querySelector('#open');
+const $headerButtons = document.querySelector('#header-buttons');
+const $new = document.querySelector('#new');
+const $save = document.querySelector('#save');
+const $open = document.querySelector('#open');
 const $dateInputDialog = document.querySelector('#date-input-dialog');
 const $dateInputForm = document.querySelector('#date-input-form');
 const $savePopUp = document.querySelector('#save-pop-up');
@@ -44,6 +43,7 @@ let celeRenderer;
 let celeScene;
 let celeCamera;
 let calGltf;
+let celeModel;
 function updateRendererSizeRSS(renderer) {
     const innerW = window.innerWidth;
     const innerH = window.innerHeight;
@@ -100,6 +100,8 @@ async function getHoliday() {
         throw new Error('$holidayDesc not found!');
     if (!$favorite)
         throw new Error('$favorite not found!');
+    if (!$noCelebration)
+        throw new Error('$noCelebration not found!');
     const params = {
         api_key: 'FoSOX7Tl9kyNyP4WRVBqwtHEj7zozDcR',
         country: 'us',
@@ -123,7 +125,6 @@ async function getHoliday() {
           $favorite.classList.add('hidden');
           $holidayDesc.textContent = '';
           currentCelebration = '';
-          holidayFound = false;
           throw new Error(`HTTP error! Status: ${holidaysPromiseResponse.status}`);
         }
         const holidaysObject =
@@ -133,35 +134,47 @@ async function getHoliday() {
           const chosenHoliday =
             holidaysArray[Math.floor(Math.random() * holidaysArray.length)];
           if (chosenHoliday.name && chosenHoliday.description) {
-            holidayFound = true;
-            $holidayName.textContent = chosenHoliday.name;
-            $favorite.classList.remove('hidden');
-            $holidayDesc.textContent = chosenHoliday.description;
-            const stringMonth =
-              currentMonth + 1 >= 10
-                ? String(currentMonth + 1)
-                : '0' + (currentMonth + 1);
-            const stringDay =
-              currentDay >= 10 ? String(currentDay) : '0' + currentDay;
-            const stringDate = `${stringMonth}/${stringDay}/${currentYear}`;
-            const match = data.holidays.find((holiday) => {
-              if (
-                chosenHoliday.name === holiday.name &&
-                stringDate === holiday.date
-              ) {
-                return true;
-              } else {
-                return false;
+            $noCelebration.classList.add('hidden');
+            getRandomCelebration();
+            const celeGltf = await loadGLTF(
+              `../../objects/celebrations/${currentCelebration}.glb`,
+            );
+            for (const child of celeScene.children) {
+              if (child.type === 'Group') {
+                celeScene.remove(child);
               }
-            });
-            if (match) {
-              if (match.favorite) {
-                $favorite.classList.remove('fa-regular');
-                $favorite.classList.add('fa-solid');
-              } else {
-                $favorite.classList.remove('fa-solid');
-                $favorite.classList.add('fa-regular');
-              }
+            }
+            celeModel = celeGltf.scene;
+            celeScene.add(celeModel);
+            celeRenderer.render(celeScene, celeCamera);
+          }
+          $holidayName.textContent = chosenHoliday.name;
+          $favorite.classList.remove('hidden');
+          $holidayDesc.textContent = chosenHoliday.description;
+          const stringMonth =
+            currentMonth + 1 >= 10
+              ? String(currentMonth + 1)
+              : '0' + (currentMonth + 1);
+          const stringDay =
+            currentDay >= 10 ? String(currentDay) : '0' + currentDay;
+          const stringDate = `${stringMonth}/${stringDay}/${currentYear}`;
+          const match = data.holidays.find((holiday) => {
+            if (
+              chosenHoliday.name === holiday.name &&
+              stringDate === holiday.date
+            ) {
+              return true;
+            } else {
+              return false;
+            }
+          });
+          if (match) {
+            if (match.favorite) {
+              $favorite.classList.remove('fa-regular');
+              $favorite.classList.add('fa-solid');
+            } else {
+              $favorite.classList.remove('fa-solid');
+              $favorite.classList.add('fa-regular');
             }
           }
         } else {
@@ -170,17 +183,27 @@ async function getHoliday() {
               celeScene.remove(child);
             }
           }
+          $noCelebration.classList.remove('hidden');
           celeRenderer.render(celeScene, celeCamera);
           $holidayName.textContent = '';
           $favorite.classList.add('hidden');
           $holidayDesc.textContent = '';
           currentCelebration = '';
-          holidayFound = false;
         }
         */
         $holidayName.textContent = `${currentDay}th of ${currentMonth + 1}`;
         $favorite.classList.remove('hidden');
         $holidayDesc.textContent = `A holiday on the ${currentDay}th of ${currentMonth + 1}`;
+        currentCelebration = 'family-celebration';
+        const celeGltf = await loadGLTF(`../../objects/celebrations/${currentCelebration}.glb`);
+        for (const child of celeScene.children) {
+            if (child.type === 'Group') {
+                celeScene.remove(child);
+            }
+        }
+        celeModel = celeGltf.scene;
+        celeScene.add(celeModel);
+        celeRenderer.render(celeScene, celeCamera);
     }
     catch (error) {
         for (const child of celeScene.children) {
@@ -193,7 +216,6 @@ async function getHoliday() {
         $favorite.classList.add('hidden');
         $holidayDesc.textContent = '';
         currentCelebration = '';
-        holidayFound = false;
         console.error('Error:', error);
     }
 }
@@ -247,14 +269,8 @@ async function createCalendarScene() {
     updateRendererSizeRSS(calRenderer);
     if (!$calCanvas)
         throw new Error('$calCanvas not found!');
-    if (!$sidebar)
-        throw new Error('$sidebar not found!');
     if (!(window.innerWidth < breakpointForLarge)) {
         $calCanvas.classList.add(`left-[${window.innerWidth / 2 - window.innerHeight / 3}px]`);
-        $sidebar.classList.add('top-[calc(50vh-53.5px)]');
-    }
-    else {
-        $sidebar.classList.add('top-[calc(200vw/3-80px)]');
     }
     calCamera = new THREE.PerspectiveCamera(75, 1, 0.1, 50);
     calCamera.position.set(15, 15, 7);
@@ -303,32 +319,21 @@ async function createCalendarScene() {
         }
         await initialCameraMovement(calCamera, calRenderer, calScene);
         await getHoliday();
-        if (!$noCelebration)
-            throw new Error('$noCelebration not found!');
-        if (holidayFound) {
-            $noCelebration.classList.add('hidden');
-            getRandomCelebration();
-            const celeGltf = await loadGLTF(`../../objects/celebrations/${currentCelebration}.glb`);
-            const celeModel = celeGltf.scene;
-            celeScene.add(celeModel);
-            celeCamera.lookAt(0, 7, 0);
-            celeRenderer.render(celeScene, celeCamera);
-        }
-        else {
-            $noCelebration.classList.remove('hidden');
-        }
+        celeCamera.lookAt(0, 7, 0);
+        celeRenderer.render(celeScene, celeCamera);
     }
     catch (error) {
         console.error('Error:', error);
     }
 }
 createCalendarScene();
-if (!$sidebar)
-    throw new Error('$sidebar not found!');
-$sidebar.addEventListener('click', sidebarClickHandler);
-function sidebarClickHandler(event) {
+if (!$headerButtons)
+    throw new Error('$headerButtons not found!');
+$headerButtons.addEventListener('click', headerButtonsClickHandler);
+function headerButtonsClickHandler(event) {
     const eventTarget = event.target;
-    if (eventTarget === $newButton) {
+    console.log(eventTarget);
+    if (eventTarget === $new) {
         if (!$dateInputDialog)
             throw new Error('$dateInputDialog not found!');
         if (!$dateInputDialog.open) {
@@ -340,6 +345,13 @@ function sidebarClickHandler(event) {
                 throw new Error('$dateInputForm not found!');
             $dateInputForm.reset();
         }
+    }
+    else if (eventTarget === $save) {
+        console.log('hi');
+        saveDate();
+    }
+    else if (eventTarget === $open) {
+        openHolidays();
     }
 }
 if (!$dateInputForm)
@@ -373,29 +385,8 @@ async function handleDateSearch(event) {
         action.play();
         await animate(mixer, action, calRenderer, calScene, calCamera, action.getClip().duration);
         await getHoliday();
-        if (!$noCelebration)
-            throw new Error('$noCelebration not found!');
-        if (holidayFound) {
-            $noCelebration.classList.add('hidden');
-            getRandomCelebration();
-            const celeGltf = await loadGLTF(`../../objects/celebrations/${currentCelebration}.glb`);
-            const celeModel = celeGltf.scene;
-            for (const child of celeScene.children) {
-                if (child.type === 'Group') {
-                    celeScene.remove(child);
-                }
-            }
-            celeScene.add(celeModel);
-            celeRenderer.render(celeScene, celeCamera);
-        }
-        else {
-            $noCelebration.classList.remove('hidden');
-        }
     }
 }
-if (!$saveButton)
-    throw new Error('$saveButton not found!');
-$saveButton.addEventListener('click', saveDate);
 function sortData() {
     data.holidays.sort((a, b) => {
         if (a.favorite === true && b.favorite === false) {
@@ -521,9 +512,6 @@ function favoriteDate() {
         saveDate();
     }
 }
-if (!$openButton)
-    throw new Error('$openButton not found!');
-$openButton.addEventListener('click', openHolidays);
 function toggleSavedHolidayPlaceholder() {
     if (!$savedHolidayPlaceholder)
         throw new Error('$savedHolidayPlaceholder not found!');
@@ -603,7 +591,6 @@ async function handleOpenDialogContentClick(event) {
         if (!holidayToDisplay.dataset.date)
             throw new Error('holidayToDisplay.dataset.date not found');
         $openDialog.close();
-        holidayFound = true;
         const year = Number(holidayToDisplay.dataset.date.slice(-4));
         const month = Number(holidayToDisplay.dataset.date.slice(0, 2)) - 1;
         const day = Number(holidayToDisplay.dataset.date.slice(3, 5));
