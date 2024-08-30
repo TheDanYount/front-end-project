@@ -24,7 +24,7 @@
     <link rel="icon" href="/images/confetti-icon.png" />
   </head>
   <body class="font-[Caveat] text-slate-800">
-    <header class="bg-slate-800 flex flex-wrap justify-end text-white">
+    <header class="bg-slate-800 flex flex-wrap justify-end text-white z-20">
       <div class="basis-full md:basis-[78%] flex justify-end">
         <div class="flex basis-full md:basis-[72%] justify-center">
           <img
@@ -42,24 +42,24 @@
       <ul
         id="header-buttons"
         class="basis-[22%] flex justify-end items-end text-xl lg:text-3xl">
-        <li>
+        <li class="relative">
           <p id="new" class="p-2 pt-0 hover:scale-110 hover:cursor-pointer">
             New
           </p>
-          <dialog
-            id="date-input-dialog"
-            class="absolute p-4 pl-6 ml-8 rounded-3xl bg-slate-800 border-0 outline-0 z-[-10]">
+          <div
+            id="date-input-popup"
+            class="absolute top-[35px] lg:top-[44px] left-[-54px] lg:left-[-84px] p-2 rounded-b-[0.5rem] bg-slate-800 border-0 outline-0 z-10 transition-all duration-500 ease-in-out opacity-0 hidden z-10">
             <form id="date-input-form">
               <input
                 type="date"
                 name="date"
-                class="p-1 rounded-2xl border-0 mb-2 outline-0" />
+                class="p-1 rounded-[0.5rem] border-0 mb-2 outline-0 text-slate-800" />
               <button
-                class="text-white border-2 rounded-full p-1 px-4 bg-gradient-to-b from-slate-800 from-40% via-slate-600 via-90% to-slate-800">
+                class="mx-auto block text-center text-white hover:scale-110">
                 Search
               </button>
             </form>
-          </dialog>
+          </div>
         </li>
         <li class="relative">
           <p id="save" class="p-2 pt-0 hover:scale-110 hover:cursor-pointer">
@@ -67,7 +67,7 @@
           </p>
           <div
             id="save-pop-up"
-            class="absolute top-[1.75rem] lg:top-[2.375rem] left-[-0.5rem] bg-slate-800 rounded-b-[0.5rem] p-2 pr-3 z-10 opacity-0">
+            class="absolute top-[1.75rem] lg:top-[2.375rem] left-[-0.5rem] bg-slate-800 rounded-b-[0.5rem] p-2 pr-3 z-[5] opacity-0">
             <p>Saved!</p>
           </div>
         </li>

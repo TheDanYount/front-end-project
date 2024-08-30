@@ -34,9 +34,9 @@ const $headerButtons = document.querySelector('#header-buttons');
 const $new = document.querySelector('#new');
 const $save = document.querySelector('#save');
 const $open = document.querySelector('#open');
-const $dateInputDialog = document.querySelector(
-  '#date-input-dialog',
-) as HTMLDialogElement;
+const $dateInputPopup = document.querySelector(
+  '#date-input-popup',
+) as HTMLDivElement;
 const $dateInputForm = document.querySelector(
   '#date-input-form',
 ) as HTMLFormElement;
@@ -474,18 +474,20 @@ $headerButtons.addEventListener('click', headerButtonsClickHandler);
 
 function headerButtonsClickHandler(event: Event): void {
   const eventTarget = event.target;
-  console.log(eventTarget);
   if (eventTarget === $new) {
-    if (!$dateInputDialog) throw new Error('$dateInputDialog not found!');
-    if (!$dateInputDialog.open) {
-      $dateInputDialog.show();
+    console.log($dateInputPopup.classList);
+    if (!$dateInputPopup) throw new Error('$dateInputPopup not found!');
+    if ($dateInputPopup.classList.contains('hidden')) {
+      console.log('hi');
+      $dateInputPopup.classList.remove('hidden');
+      $dateInputPopup.classList.add('opacity-100');
     } else {
-      $dateInputDialog.close();
+      $dateInputPopup.classList.remove('opacity-100');
+      setTimeout(() => $dateInputPopup.classList.add('hidden'), 500);
       if (!$dateInputForm) throw new Error('$dateInputForm not found!');
       $dateInputForm.reset();
     }
   } else if (eventTarget === $save) {
-    console.log('hi');
     saveDate();
   } else if (eventTarget === $open) {
     openHolidays();
@@ -501,7 +503,8 @@ async function handleDateSearch(event: Event): Promise<void> {
   const dateString = elements.date.value;
   if (dateString.length === 10) {
     $dateInputForm.reset();
-    $dateInputDialog.close();
+    $dateInputPopup.classList.remove('opacity-100');
+    setTimeout(() => $dateInputPopup.classList.add('hidden'), 500);
     const year = Number(dateString.slice(0, 4));
     const month = Number(dateString.slice(-5, -3)) - 1;
     const day = Number(dateString.slice(-2));
