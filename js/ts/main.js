@@ -137,7 +137,7 @@ async function getHoliday() {
             $noCelebration.classList.add('hidden');
             getRandomCelebration();
             const celeGltf = await loadGLTF(
-              `../../objects/celebrations/${currentCelebration}.glb`,
+              `/objects/celebrations/${currentCelebration}.glb`,
             );
             for (const child of celeScene.children) {
               if (child.type === 'Group') {
@@ -195,7 +195,7 @@ async function getHoliday() {
         $favorite.classList.remove('hidden');
         $holidayDesc.textContent = `A holiday on the ${currentDay}th of ${currentMonth + 1}`;
         currentCelebration = 'family-celebration';
-        const celeGltf = await loadGLTF(`../../objects/celebrations/${currentCelebration}.glb`);
+        const celeGltf = await loadGLTF(`/objects/celebrations/${currentCelebration}.glb`);
         for (const child of celeScene.children) {
             if (child.type === 'Group') {
                 celeScene.remove(child);
@@ -294,11 +294,11 @@ async function createCalendarScene() {
     celeSceneLight.position.set(10, 18, 0);
     celeScene.add(celeSceneLight);
     try {
-        calGltf = await loadGLTF('../../objects/calendar.glb');
-        const newTexture1 = await loadTexture(`../../images/days/d${previousDay}.png`);
-        const newTexture2 = await loadTexture(`../../images/months/m${previousMonth + 1}.png`);
-        const newTexture3 = await loadTexture(`../../images/days/d${currentDay}.png`);
-        const newTexture4 = await loadTexture(`../../images/months/m${currentMonth + 1}.png`);
+        calGltf = await loadGLTF('/objects/calendar.glb');
+        const newTexture1 = await loadTexture(`/images/days/d${previousDay}.png`);
+        const newTexture2 = await loadTexture(`/images/months/m${previousMonth + 1}.png`);
+        const newTexture3 = await loadTexture(`/images/days/d${currentDay}.png`);
+        const newTexture4 = await loadTexture(`/images/months/m${currentMonth + 1}.png`);
         updateTextures([newTexture1, newTexture2, newTexture3, newTexture4], calGltf);
         const calModel = calGltf.scene;
         calScene.add(calModel);
@@ -378,10 +378,10 @@ async function handleDateSearch(event) {
         currentYear = year;
         currentMonth = month;
         currentDay = day;
-        const newTexture1 = await loadTexture(`../../images/days/d${previousDay}.png`);
-        const newTexture2 = await loadTexture(`../../images/months/m${previousMonth + 1}.png`);
-        const newTexture3 = await loadTexture(`../../images/days/d${currentDay}.png`);
-        const newTexture4 = await loadTexture(`../../images/months/m${currentMonth + 1}.png`);
+        const newTexture1 = await loadTexture(`/images/days/d${previousDay}.png`);
+        const newTexture2 = await loadTexture(`/images/months/m${previousMonth + 1}.png`);
+        const newTexture3 = await loadTexture(`/images/days/d${currentDay}.png`);
+        const newTexture4 = await loadTexture(`/images/months/m${currentMonth + 1}.png`);
         updateTextures([newTexture1, newTexture2, newTexture3, newTexture4], calGltf);
         action.stop();
         action.time = 0;
@@ -421,7 +421,7 @@ function createDomRepresentationOfSavedHolidayAndAddItAtPosition(pos, holidayToA
     container.dataset.name = holidayToAdd.name;
     container.dataset.description = holidayToAdd.desc;
     const img = document.createElement('img');
-    img.src = `../../images/celebrations/${holidayToAdd.imageReference}.png`;
+    img.src = `/images/celebrations/${holidayToAdd.imageReference}.png`;
     img.className = `w-44 h-44 lg:w-60 lg:h-60`;
     container.appendChild(img);
     const trash = document.createElement('i');
@@ -539,7 +539,7 @@ function fillOpenDialog(savedHolidaysArray) {
         container.dataset.name = savedHolidaysArray[i].name;
         container.dataset.description = savedHolidaysArray[i].desc;
         const img = document.createElement('img');
-        img.src = `../../images/celebrations/${savedHolidaysArray[i].imageReference}.png`;
+        img.src = `/images/celebrations/${savedHolidaysArray[i].imageReference}.png`;
         img.className = `w-44 h-44 lg:w-60 lg:h-60`;
         container.appendChild(img);
         const trash = document.createElement('i');
@@ -605,10 +605,10 @@ async function handleOpenDialogContentClick(event) {
         currentYear = year;
         currentMonth = month;
         currentDay = day;
-        const newTexture1 = await loadTexture(`../../images/days/d${previousDay}.png`);
-        const newTexture2 = await loadTexture(`../../images/months/m${previousMonth + 1}.png`);
-        const newTexture3 = await loadTexture(`../../images/days/d${currentDay}.png`);
-        const newTexture4 = await loadTexture(`../../images/months/m${currentMonth + 1}.png`);
+        const newTexture1 = await loadTexture(`/images/days/d${previousDay}.png`);
+        const newTexture2 = await loadTexture(`/images/months/m${previousMonth + 1}.png`);
+        const newTexture3 = await loadTexture(`/images/days/d${currentDay}.png`);
+        const newTexture4 = await loadTexture(`/images/months/m${currentMonth + 1}.png`);
         updateTextures([newTexture1, newTexture2, newTexture3, newTexture4], calGltf);
         action.stop();
         action.time = 0;
@@ -628,7 +628,7 @@ async function handleOpenDialogContentClick(event) {
         if (!$noCelebration)
             throw new Error('$noCelebration not found!');
         $noCelebration.classList.add('hidden');
-        const celeGltf = await loadGLTF(`../../objects/celebrations/${holidayToDisplay.dataset.imgRef}.glb`);
+        const celeGltf = await loadGLTF(`/objects/celebrations/${holidayToDisplay.dataset.imgRef}.glb`);
         const celeModel = celeGltf.scene;
         for (const child of celeScene.children) {
             if (child.type === 'Group') {
