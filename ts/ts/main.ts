@@ -165,6 +165,37 @@ async function delay(time: number): Promise<boolean> {
   });
 }
 
+function getStringDate(): string {
+  const stringMonth =
+    currentMonth + 1 >= 10
+      ? String(currentMonth + 1)
+      : '0' + (currentMonth + 1);
+  const stringDay = currentDay >= 10 ? String(currentDay) : '0' + currentDay;
+  return `${stringMonth}/${stringDay}/${currentYear}`;
+}
+
+function favoriteToggle(isFavorite: boolean): void {
+  if (isFavorite) {
+    $favorite.classList.remove('fa-regular');
+    $favorite.classList.add('fa-solid');
+  } else {
+    $favorite.classList.remove('fa-solid');
+    $favorite.classList.add('fa-regular');
+  }
+}
+
+function updateFavorite(name: string): void {
+  const stringDate = getStringDate();
+  const match = data.holidays.find((holiday) => {
+    if (name === holiday.name && stringDate === holiday.date) {
+      return true;
+    } else {
+      return false;
+    }
+  });
+  if (match) favoriteToggle(match.favorite);
+}
+
 async function getHoliday(): Promise<void> {
   if (!$holidayName) throw new Error('$holidayName not found!');
   if (!$holidayDesc) throw new Error('$holidayDesc not found!');
@@ -221,32 +252,7 @@ async function getHoliday(): Promise<void> {
       $holidayName.textContent = chosenHoliday.name;
       $favorite.classList.remove('hidden');
       $holidayDesc.textContent = chosenHoliday.description;
-      const stringMonth =
-        currentMonth + 1 >= 10
-          ? String(currentMonth + 1)
-          : '0' + (currentMonth + 1);
-      const stringDay =
-        currentDay >= 10 ? String(currentDay) : '0' + currentDay;
-      const stringDate = `${stringMonth}/${stringDay}/${currentYear}`;
-      const match = data.holidays.find((holiday) => {
-        if (
-          chosenHoliday.name === holiday.name &&
-          stringDate === holiday.date
-        ) {
-          return true;
-        } else {
-          return false;
-        }
-      });
-      if (match) {
-        if (match.favorite) {
-          $favorite.classList.remove('fa-regular');
-          $favorite.classList.add('fa-solid');
-        } else {
-          $favorite.classList.remove('fa-solid');
-          $favorite.classList.add('fa-regular');
-        }
-      }
+      updateFavorite(chosenHoliday.name)
     } else {
       for (const child of celeScene.children) {
         if (child.type === 'Group') {
@@ -614,17 +620,12 @@ function saveDate(): void {
     'opacity-100',
   );
   setTimeout(() => $savePopUp.classList.remove('opacity-100'), 1000);
-  const stringMonth =
-    currentMonth + 1 >= 10
-      ? String(currentMonth + 1)
-      : '0' + (currentMonth + 1);
-  const stringDay = currentDay >= 10 ? String(currentDay) : '0' + currentDay;
   const holidayToAdd: SavedHoliday = {
     name: $holidayName.textContent,
     desc: $holidayDesc.textContent,
     favorite: $favorite.dataset.favorite === 'y',
     imageReference: currentCelebration,
-    date: `${stringMonth}/${stringDay}/${currentYear}`,
+    date: getStringDate(),
   };
   if (
     !data.holidays.some(
@@ -795,13 +796,7 @@ async function handleOpenDialogContentClick(event: Event): Promise<void> {
     );
     $holidayName.textContent = String(holidayToDisplay.dataset.name);
     $favorite.classList.remove('hidden');
-    if (holidayToDisplay.dataset.favorite === 'y') {
-      $favorite.classList.remove('fa-regular');
-      $favorite.classList.add('fa-solid');
-    } else {
-      $favorite.classList.remove('fa-solid');
-      $favorite.classList.add('fa-regular');
-    }
+    favoriteToggle(holidayToDisplay.dataset.favorite === 'y');
     $holidayDesc.textContent = String(holidayToDisplay.dataset.description);
     if (!$noCelebration) throw new Error('$noCelebration not found!');
     $noCelebration.classList.add('hidden');
@@ -833,12 +828,7 @@ function deleteHoliday(): void {
   $deleteConfirmationDialog.close();
   if (!$holidayName) throw new Error('$holidayName not found!');
   if (holidayToDelete) {
-    const stringMonth =
-      currentMonth + 1 >= 10
-        ? String(currentMonth + 1)
-        : '0' + (currentMonth + 1);
-    const stringDay = currentDay >= 10 ? String(currentDay) : '0' + currentDay;
-    const stringDate = `${stringMonth}/${stringDay}/${currentYear}`;
+    const stringDate = getStringDate();
     if (
       holidayToDelete.dataset.name === $holidayName.textContent &&
       holidayToDelete.dataset.date === stringDate
