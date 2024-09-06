@@ -561,10 +561,7 @@ function removeHolidayFromDomAtPosition(pos: number): void {
   $openDialogContent.removeChild($openDialogContent.children[pos]);
 }
 
-function createDomRepresentationOfSavedHolidayAndAddItAtPosition(
-  pos: number,
-  holidayToAdd: SavedHoliday,
-): void {
+function createDOMHoliday(holidayToAdd: SavedHoliday): HTMLElement {
   const container = document.createElement('div');
   container.className = `relative flex flex-col flex-wrap gap-2 w-64
     lg:w-[24rem] items-center bg-white rounded-[3rem]`;
@@ -594,7 +591,7 @@ function createDomRepresentationOfSavedHolidayAndAddItAtPosition(
   p.className = `text-base lg:text-3xl`;
   p.textContent = holidayToAdd.date;
   container.appendChild(p);
-  $openDialogContent.insertBefore(container, $openDialogContent.children[pos]);
+  return container;
 }
 
 function saveDate(): void {
@@ -631,9 +628,10 @@ function saveDate(): void {
     data.holidays.push(holidayToAdd);
     sortData();
     const pos = data.holidays.findIndex((element) => element === holidayToAdd);
-    createDomRepresentationOfSavedHolidayAndAddItAtPosition(
-      pos + 1,
-      holidayToAdd,
+    const newDOMHoliday = createDOMHoliday(holidayToAdd);
+    $openDialogContent.insertBefore(
+      newDOMHoliday,
+      $openDialogContent.children[pos + 1],
     );
     storeData();
     toggleSavedHolidayPlaceholder();
@@ -651,9 +649,10 @@ function saveDate(): void {
         const pos = data.holidays.findIndex(
           (element) => element === holidayToAdd,
         );
-        createDomRepresentationOfSavedHolidayAndAddItAtPosition(
-          pos + 1,
-          holidayToAdd,
+        const newDOMHoliday = createDOMHoliday(holidayToAdd);
+        $openDialogContent.insertBefore(
+          newDOMHoliday,
+          $openDialogContent.children[pos + 1],
         );
         storeData();
         toggleSavedHolidayPlaceholder();
@@ -695,36 +694,8 @@ function fillOpenDialog(savedHolidaysArray: SavedHoliday[]): void {
   if (!$openDialogContent) throw new Error('$openDialogContent not found!');
   toggleSavedHolidayPlaceholder();
   for (let i = 0; i < savedHolidaysArray.length; i++) {
-    const container = document.createElement('div');
-    container.className = `relative flex flex-col flex-wrap gap-2 w-64
-    lg:w-[24rem] items-center bg-white rounded-[3rem]`;
-    container.dataset.favorite = savedHolidaysArray[i].favorite ? 'y' : 'n';
-    container.dataset.date = savedHolidaysArray[i].date;
-    container.dataset.imgRef = savedHolidaysArray[i].imageReference;
-    container.dataset.name = savedHolidaysArray[i].name;
-    container.dataset.description = savedHolidaysArray[i].desc;
-    const img = document.createElement('img');
-    img.src = `/images/celebrations/${savedHolidaysArray[i].imageReference}.png`;
-    img.className = `w-44 h-44 lg:w-60 lg:h-60`;
-    container.appendChild(img);
-    const trash = document.createElement('i');
-    trash.className = `absolute bottom-0 right-0 fa-solid fa-trash text-4xl`;
-    container.appendChild(trash);
-    const star = document.createElement('i');
-    savedHolidaysArray[i].favorite
-      ? (star.className = `absolute top-1 left-[3rem] lg:left-[4.75rem] fa-solid fa-star text-2xl text-amber-400`)
-      : (star.className = `absolute top-1 left-[3rem] lg:left-[4.75rem] fa-regular fa-star text-2xl text-amber-400`);
-    container.appendChild(star);
-    const h2 = document.createElement('h2');
-    h2.className = `text-2xl lg:text-5xl font-semibold font-[Calligraffitti]
-    w-full text-center`;
-    h2.textContent = savedHolidaysArray[i].name;
-    container.appendChild(h2);
-    const p = document.createElement('p');
-    p.className = `text-base lg:text-3xl`;
-    p.textContent = savedHolidaysArray[i].date;
-    container.appendChild(p);
-    $openDialogContent.appendChild(container);
+    const newDOMHoliday = createDOMHoliday(savedHolidaysArray[i]);
+    $openDialogContent.appendChild(newDOMHoliday);
   }
 }
 
