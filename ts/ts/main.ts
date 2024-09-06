@@ -409,14 +409,12 @@ async function createCalendarScene(): Promise<void> {
   celeScene.add(celeSceneLight);
   try {
     calGltf = await loadGLTF('/objects/calendar.glb');
-    const newTexture1 = await loadTexture(`/images/days/d${previousDay}.png`);
-    const newTexture2 = await loadTexture(
-      `/images/months/m${previousMonth + 1}.png`,
-    );
-    const newTexture3 = await loadTexture(`/images/days/d${currentDay}.png`);
-    const newTexture4 = await loadTexture(
-      `/images/months/m${currentMonth + 1}.png`,
-    );
+    const [newTexture1, newTexture2, newTexture3, newTexture4] = [
+      await loadTexture(`/images/days/d${previousDay}.png`),
+      await loadTexture(`/images/months/m${previousMonth + 1}.png`),
+      await loadTexture(`/images/days/d${currentDay}.png`),
+      await loadTexture(`/images/months/m${currentMonth + 1}.png`),
+    ];
     updateTextures(
       [newTexture1, newTexture2, newTexture3, newTexture4],
       calGltf,
@@ -518,14 +516,12 @@ async function handleDateSearch(event: Event): Promise<void> {
     currentYear = year;
     currentMonth = month;
     currentDay = day;
-    const newTexture1 = await loadTexture(`/images/days/d${previousDay}.png`);
-    const newTexture2 = await loadTexture(
-      `/images/months/m${previousMonth + 1}.png`,
-    );
-    const newTexture3 = await loadTexture(`/images/days/d${currentDay}.png`);
-    const newTexture4 = await loadTexture(
-      `/images/months/m${currentMonth + 1}.png`,
-    );
+    const [newTexture1, newTexture2, newTexture3, newTexture4] = [
+      await loadTexture(`/images/days/d${previousDay}.png`),
+      await loadTexture(`/images/months/m${previousMonth + 1}.png`),
+      await loadTexture(`/images/days/d${currentDay}.png`),
+      await loadTexture(`/images/months/m${currentMonth + 1}.png`),
+    ];
     updateTextures(
       [newTexture1, newTexture2, newTexture3, newTexture4],
       calGltf,
